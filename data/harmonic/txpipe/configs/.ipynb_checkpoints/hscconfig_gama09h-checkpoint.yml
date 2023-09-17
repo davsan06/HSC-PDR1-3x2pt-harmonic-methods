@@ -1,0 +1,122 @@
+
+PZPDFMLZ:
+    nz: 301
+    zmax: 3.0
+    chunk_rows: 1000000
+
+TXPhotozStack:
+    chunk_rows: 1000000
+    
+TXPhotozPlots:
+    plot_src: True
+    plot_lens: False
+
+TXSourceSelectorHSC:
+    bands: i #used for selection
+    T_cut: 0.0
+    s2n_cut: 0.0
+    max_rows: 1000000
+    delta_gamma: 0.02
+    #source_zbin_edges: [0.15, 0.5, 0.75, 1.0, 1.5]
+    source_zbin_edges: [0.3, 0.6, 0.9, 1.2, 1.5]
+    chunk_rows: 1000000
+    nsrc: 4
+    nlens: 0
+    # lens selection
+    select_lens: False
+    apply_flag_cut: True
+    shear_catalog_type: 'hsc'
+    shear_prefix: ''
+    input_pz: True
+    i_hi_cut: 24.5
+    r_hi_cut: -99
+    i_lo_cut: -99
+    r_lo_cut: -99
+    true_z: True
+    # may also need one for r_cpar_cut
+
+
+TXTruthLensSelector:
+    # Mag cuts
+    chunk_rows: 1000000
+    lens_zbin_edges: [0.15,0.5,0.75,1.0,1.5]
+    cperp_cut: 100.
+    r_cpar_cut: 100
+    r_lo_cut: 0.
+    r_hi_cut: 99.
+    i_lo_cut: 0.
+    i_hi_cut: 24.5
+    r_i_cut: 100.
+    # may also need one for r_cpar_cut
+
+TXExternalMask:
+    ext_mask: '/global/cfs/projectdirs/lsst/groups/LSS/HSC_data/masked_fraction_nside4096_gama09h.fits'
+
+TXMainMaps:
+    nside: 2048
+
+TXLensMaps:
+  nside: 2048
+
+TXSourceMaps:
+  nside: 2048
+
+TXLensTrueNumberDensity:
+    zmax: 3
+    nz: 301
+
+TXSourceTrueNumberDensity:
+    zmax: 3
+    nz: 301
+
+TXLensAuxiliaryMaps:
+    snr_threshold: 0.
+TXSourceAuxiliaryMaps:
+    snr_threshold: 0.
+
+TXDiagnosticPlots:
+    shear_prefix: ''
+    psf_prefix: 'psf_'    
+
+TXLensDiagnosticMaps:
+    chunk_rows: 100000 0 # Number of rows to process at once
+    sparse: True  # Generate sparse maps - faster if using small areas
+    snr_threshold: 0.0
+    snr_delta: 1.0
+    pixelization: healpix
+    nside: 2048
+    compute_lens: True
+    # pixelization: gnomonic
+    # # 
+    pixel_size: 0.2
+    ra_cent: 62.
+    dec_cent: -35.
+    npix_x: 60
+    npix_y: 60
+    shear_type: 'hsc'
+
+TXSourceNoiseMaps:
+    shear_prefix: ''
+    shear_catalog_type: 'hsc'
+
+TXTwoPointFourier:
+    chunk_rows: 1000000
+    flip_g2: True
+    flip_g1: True
+    # ell_min: 300
+    # ell_max: 4096
+    # n_ell: 20
+    nside: 2048
+    # DSC mode
+    ell_spacing: 'linear' # anything different to 'log' defaults to linear 
+    ell_min: 50
+    ell_max: 1950
+    n_ell: 20
+    # Master branch does not contain this option
+    ell_edges: [100, 200, 300, 400, 600, 800, 1000, 1400, 1800, 2200]
+    cache_dir: '/pscratch/sd/d/davidsan/txpipe-hsc-caches/txpipe-aug2023/cache-gama09-binning-test'
+    analytic_noise: True
+    
+TXFourierTJPCovariance:
+    cov_type: ["FourierGaussianNmt","FourierSSCHaloModel"]
+    # cov_type: ["FourierGaussianNmt"]

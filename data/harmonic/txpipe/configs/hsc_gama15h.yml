@@ -1,0 +1,95 @@
+# This larger run has nearly 79M galaxies in
+#launcher: cori-mini
+launcher:
+    name: mini
+    interval: 1.0
+
+# These site options tell the launcher to use shifter
+#site:
+#    shifter: joezuntz/txpipe-dev
+site:
+  image: joezuntz/txpipe
+  name: cori-interactive
+  max_threads: 64
+  #mpi_command: mpirun -n
+#site:
+#    name: cori-interactive
+    # Number of jobs to run at once.  Default as shown.
+    #    max_threads: ${SLURM_JOB_NUM_NODES}
+# site:
+#     name: local
+#     # Number of jobs to run at once.  Default as shown.
+#     max_threads: 32
+#     # These are available for every site.  The default is not to use them:
+#     # docker/shifter image
+#     #image: joezuntz/txpipe
+#     #docker/shifter volume mounting
+#     volume: ${PWD}:/opt/txpipe 
+
+# modules and packages to import that have pipeline
+# stages defined in them
+modules: txpipe
+
+stages:
+    - name: TXSourceSelectorHSC
+      nprocess: 32
+    - name: TXTruthLensSelector
+      nprocess: 32
+    - name: TXSourceTrueNumberDensity
+    - name: TXLensTrueNumberDensity
+      #- name: TXLensCatalogSplitter
+    - name: TXShearCalibration
+    - name: TXSourceMaps
+    - name: TXLensMaps
+    - name: TXAuxiliarySourceMaps
+    - name: TXAuxiliaryLensMaps
+    - name: TXExternalMask
+    - name: TXTracerMetadata
+    - name: TXDensityMaps
+    - name: TXSourceNoiseMaps
+    - name: TXLensNoiseMaps
+    - name: TXTwoPointTheoryFourier
+    - name: TXTwoPointFourier
+      nodes: 6
+      nprocess: 6
+      threads_per_process: 32
+    # - name: TXSourceDiagnosticPlots
+    - name: TXLensDiagnosticPlots
+    - name: TXFourierTJPCovariance
+      nodes: 6
+      nprocess: 6
+      threads_per_process: 32
+    - name: TXTwoPointPlotsFourier
+    
+# Where to put outputs
+output_dir: /pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/outputs_gama15h
+
+# configuration settings
+config: /pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/configs/hscconfig_gama15h.yml
+
+# On NERSC, set this before running:
+# export DATA=${LSST}/groups/WL/users/zuntz/data/metacal-testbed
+python_paths:
+    - submodules/WLMassMap/python/desc/
+    - submodules/TJPCov
+    - submodules/FlexZPipe
+    - submodules/RAIL
+
+inputs:
+    # See README for paths to download these files
+    shear_catalog: /global/cfs/projectdirs/lsst/groups/LSS/HSC_reanalysis/data_javi/2023_reanalysis/shear_sourcecatalog_hsc_GAMA15H_nonmetacal_05_22.h5
+    photometry_catalog: /global/cfs/projectdirs/lsst/groups/LSS/HSC_reanalysis/data_javi/2023_reanalysis/photometry_lenscatalog_hsc_GAMA15H_nonmetacal_08_23.h5
+    photoz_trained_model: data/hsc/inputs/cosmoDC2_trees_i25.3.npy
+    calibration_table: data/hsc/inputs/sample_cosmodc2_w10year_errors.dat
+    exposures: data/hsc/inputs/exposures.hdf5
+    # This file comes with the code
+    fiducial_cosmology: data/fiducial_cosmology.yml
+
+# if supported by the launcher, restart the pipeline where it left off
+# if interrupted
+resume: True
+# where to put output logs for individual stages
+log_dir: data/hsc/logs
+# where to put an overall parsl pipeline log
+pipeline_log: data/hsc/log.txt
+
