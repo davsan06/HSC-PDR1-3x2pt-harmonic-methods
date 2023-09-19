@@ -1335,7 +1335,7 @@ def Clustering2pt_plot(fname,labels,add_individual=False, add_combined=False, ad
                         # read cosmic shear data points
                         ell, Cell, cov = s.get_ell_cl("galaxy_density_cl", f'lens_{i}', f'lens_{j}', return_cov=True)
                         noise = s.get_tag("n_ell", data_type="galaxy_density_cl", tracers=(f"lens_{i}",f"lens_{j}"))
-                        Cell = Cell - noise
+                        # Cell = Cell - noise
                         # extracting error from covariance
                         err = np.sqrt(np.diag(cov))
                         # computing prefactor 
