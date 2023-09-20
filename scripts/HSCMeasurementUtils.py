@@ -46,6 +46,23 @@ def IndexToDeclRa(index,nside):
     theta,phi=hp.pixelfunc.pix2ang(nside,index)
     return -np.degrees(theta-np.pi/2.),np.degrees(np.pi*2.-phi)
 
+def RaDecToIndex(ra_deg, dec_deg, nside=32):
+    """
+    Convert Right Ascension (RA) and Declination (Dec) coordinates to Healpix pixel indices.
+
+    Parameters:
+    - ra_deg: Numpy array of Right Ascension values in degrees.
+    - dec_deg: Numpy array of Declination values in degrees.
+    - nside: Healpix resolution parameter (default is 32).
+
+    Returns:
+    - Numpy array of Healpix pixel indices corresponding to the input coordinates.
+    """
+    # Convert RA and Dec to pixel indices
+    pix_indices = hp.ang2pix(nside, np.radians(90 - dec_deg), np.radians(ra_deg))
+
+    return pix_indices
+
 def LensTomoCat_plot(fname,title):
     # Read table
     table = h5py.File(fname)
