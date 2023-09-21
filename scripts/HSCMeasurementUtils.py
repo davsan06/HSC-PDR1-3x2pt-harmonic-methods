@@ -128,13 +128,57 @@ def Mask_plot(fname,title):
     cbar.set_label('fracdet')
     return()
 
-def RedshiftDistr_plot(sacc):
-    nbins = len(sacc.tracers.keys())
+def RedshiftDistr_plot(sacc, savepath = None):
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(3*1.5, 4*1.5), sharex=True)
+    plt.subplots_adjust(hspace=0)
+
+    nbins_src = sum(1 for elemento in sacc.tracers.keys() if "source" in elemento)
+    nbins_lens = sum(1 for elemento in sacc.tracers.keys() if "lens" in elemento)
+
+    # Sources
     z = sacc.tracers['source_0'].z
-    for i in np.arange(nbins):
+    delta_z = z[1] - z[0]
+    for i in np.arange(nbins_src):
         nz = sacc.tracers[f'source_{i}'].nz
-        plt.plot(z,nz)
-    plt.xlabel('photo-z')
+        area = sum(delta_z * nz)
+        # area normalization
+        nz /= area
+        if i == 0:
+            ax1.plot(z,nz,color=colors[i], label='Sources')
+            ax1.fill_between(z,nz, 0, alpha=0.3, color=colors[i])
+        else: 
+            ax1.plot(z,nz,color=colors[i])
+            ax1.fill_between(z,nz, 0, alpha=0.3, color=colors[i])
+    # Lenses
+    z = sacc.tracers['lens_0'].z
+    delta_z = z[1] - z[0]
+    for i in np.arange(nbins_lens):
+        nz = sacc.tracers[f'lens_{i}'].nz
+        area = sum(delta_z * nz)
+        # area normalization
+        nz /= area
+        if i == 0:
+            ax2.plot(z,nz,color=colors[i],label='Lenses')
+            ax2.fill_between(z,nz, 0, alpha=0.3, color=colors[i])
+        else: 
+            ax2.plot(z,nz,color=colors[i])
+            ax2.fill_between(z,nz, 0, alpha=0.3, color=colors[i])
+    for ax in (ax1, ax2):
+        ax.set_xlim([0.0,2.5])
+        ax.set_ylim([0.0,6.7])
+        ax.set_ylabel('n(z)')
+    ax2.set_xticks([0.5,1.0,1.5,2.0])
+    ax1.text(0.7, 0.7, 'Sources',transform=ax1.transAxes,fontsize=12)
+    ax2.text(0.7, 0.7, 'Lenses',transform=ax2.transAxes,fontsize=12)
+    ax2.set_xlabel('redshift')
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath, 'dndz.png'),
+                     dpi=300,
+                     bbox_inches='tight')
+        plt.savefig(os.path.join(savepath, 'dndz.pdf'),
+                     dpi=300,
+                     bbox_inches='tight')
+        
     plt.show()
     plt.close()
     return()
@@ -1110,7 +1154,7 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_lit
                                           fmt='o', 
                                           markersize=3.0, 
                                           capsize=2,
-                                          label='This work (IVW)')
+                                          label='This work')
                         
                         snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                         # z-bin pair
@@ -1308,7 +1352,7 @@ def Shear2pt_plot_Hamana_real(save_fig=False):
                     dpi=300,
                     bbox_inches='tight')
     return()
-def Clustering2pt_plot(fname,labels,add_individual=False, add_combined=False, add_literature=False,save_fig=False):
+def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_literature=False,save_fig=False):
     # fname list of sacc data vectors
     # labels list of labels for the dvs
     # add_literature Add Hikage et al. and Nicola et al. measurements
@@ -1410,10 +1454,10 @@ def Clustering2pt_plot(fname,labels,add_individual=False, add_combined=False, ad
                                         fmt='o', 
                                         markersize=3.0, 
                                         capsize=2,
-                                        label='This work (IVW)')
+                                        label='This work')
                         snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                         # z-bin pair
-                        axs[i].text(0.85, 0.05,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[i].transAxes, fontsize=6)
+                        axs[i].text(0.85, 0.1,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[i].transAxes, fontsize=6)
     if add_literature == True:
         for i in np.arange(nbins_lens):
             ell_an, Cell_an, err = NicolaClustering_Cells(i)
@@ -1428,8 +1472,10 @@ def Clustering2pt_plot(fname,labels,add_individual=False, add_combined=False, ad
                             markersize=3.0, 
                             capsize=2,
                             label='Nicola et al.')
-
-    plt.legend(bbox_to_anchor=(0.5, 1.35),ncol = 3, frameon=False,fontsize=12)
+    if add_individual == False:
+        axs[3].legend(frameon=False,fontsize=8)
+    else:
+        plt.legend(bbox_to_anchor=(-0.1, 1.2),ncol = 3, frameon=False,fontsize=12)
     if save_fig == True:
         plt.savefig('Clustering2pt.png',
             dpi=300,
@@ -1517,7 +1563,7 @@ def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_
                                       fmt='o', 
                                       markersize=3.0, 
                                       capsize=2,
-                                      label='This work (IVW)')
+                                      label='This work')
                     snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                     # z-bin pair
                     axs[i,j].text(0.15, 0.70,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[i,j].transAxes, fontsize=6)
