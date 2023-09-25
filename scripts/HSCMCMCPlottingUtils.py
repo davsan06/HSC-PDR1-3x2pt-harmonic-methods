@@ -13,9 +13,9 @@ from numpy.random import normal, uniform
 
 # Matplotlib formatting
 # Matplotlib settings
-colors = ["#000000","#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
+colors = ["#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
 
-plt.rcParams['figure.figsize'] = 2., 2.
+plt.rcParams['figure.figsize'] = 3., 3.
 plt.rcParams['figure.dpi'] = 300
 plt.rcParams['figure.subplot.left'] = 0.125
 plt.rcParams['figure.subplot.right'] = 0.9
@@ -42,7 +42,7 @@ plt.rcParams['ytick.minor.size'] = 3. # minor tick size in points
 # plt.rcParams['text.usetex'] = True
 plt.rcParams['font.family'] =  'serif'
 # plt.rcParams['font.family'] =  'cmr10'
-plt.rcParams['font.size'] = 10 
+plt.rcParams['font.size'] = 8 
 # axes linewidth
 plt.rcParams['axes.linewidth'] = 1.2 #set the value globally
 
@@ -581,11 +581,6 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
                        uniform(-5.0,5.0,size=10000000)]
 
         c.add_chain(priors,parameters=parameters_priors,name='Prior',show_as_1d_prior=True)
-        # c.configure(linestyles=["-"]*len(fname_list),
-        #             linewidths=[2.0]*len(fname_list),
-        #             shade=[False]*(len(fname_list)),
-        #             colors=colors,
-        #             max_ticks=3)
             
     # print(type(fname_list))
     # Chain index to choose the color
@@ -856,10 +851,10 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
         k += 1
     # Config chain
     c.configure(flip=False,
-                linestyles=['--']+["-"]*len(fname_list),
+                linestyles=["-"]*len(fname_list),
                 # linewidths=[1.0]+[1.2]*len(fname_list),
                 shade=[False]+[False]*len(fname_list),
-                legend_kwargs={"fontsize": 8},#, "loc": "upper right"},
+                legend_kwargs={"fontsize": 5},#, "loc": "upper right"},
                 #legend_location=(0, 0),
                 watermark_text_kwargs={"alpha": 0.2,"weight": "bold"},
                 colors=colors,
@@ -950,9 +945,11 @@ def plot_Omegam_sigma8_Hikage(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3
 def plot_Omegam_sigma8(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
     fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$'], 
                              extents=extents_dict,
-                             watermark="Preliminary",
-                             figsize=(5,5))
+                             watermark="Preliminary")
     plt.savefig(os.path.join(savepath,f'Om_sigma8_{labelpng}.png'),
+               dpi=300,
+               bbox_inches='tight')
+    plt.savefig(os.path.join(savepath,f'Om_sigma8_{labelpng}.pdf'),
                dpi=300,
                bbox_inches='tight')
     plt.show()
