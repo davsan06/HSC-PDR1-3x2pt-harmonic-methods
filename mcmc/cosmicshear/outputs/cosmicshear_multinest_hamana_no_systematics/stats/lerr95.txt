@@ -1,0 +1,13 @@
+#parameter lerr95
+#output.txt
+cosmological_parameters--omega_c     0.118814
+cosmological_parameters--omega_b     0.038062
+cosmological_parameters--log10as_hamana     0.331116
+cosmological_parameters--n_s     0.89124
+cosmological_parameters--h0     0.656601
+cosmological_parameters--sigma_8     0.774634
+data_vector--2pt_chi2     nan
+prior     nan
+like     -122.481
+post     -116.094
+weight     3.00876e-05

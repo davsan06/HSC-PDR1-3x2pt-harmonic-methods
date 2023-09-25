@@ -1,0 +1,20 @@
+#parameter mean std_dev
+#output.txt
+cosmological_parameters--omega_c   1.963676e-01   1.946881e-02
+cosmological_parameters--omega_b   4.176452e-02   3.163494e-03
+cosmological_parameters--log10as_hamana   9.806844e-01   1.971056e-01
+cosmological_parameters--n_s   1.056322e+00   1.215452e-02
+cosmological_parameters--h0   7.943722e-01   2.221265e-02
+firecrown_two_point--source_0_delta_z   -3.384144e-02   3.265273e-03
+firecrown_two_point--source_1_delta_z   7.537068e-03   3.603055e-03
+firecrown_two_point--source_2_delta_z   -2.332264e-02   6.412845e-03
+firecrown_two_point--source_3_delta_z   -1.803352e-02   1.142796e-02
+firecrown_two_point--mult_bias   -1.341588e-03   5.233896e-03
+firecrown_two_point--a_ia   3.437241e-01   5.684372e-02
+firecrown_two_point--eta_eff   -4.389115e+00   5.558217e-01
+cosmological_parameters--sigma_8   9.855509e-01   4.521859e-02
+data_vector--2pt_chi2   nan   nan
+prior   1.691872e+01   2.800454e-01
+like   -3.598271e+02   2.635752e+00
+post   -3.429084e+02   2.518229e+00
+weight   7.156576e-05   7.641238e-05

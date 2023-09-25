@@ -1,0 +1,20 @@
+#parameter lerr95
+#output.txt
+cosmological_parameters--omega_c     0.159334
+cosmological_parameters--omega_b     0.038392
+cosmological_parameters--log10as_hamana     -0.497592
+cosmological_parameters--n_s     0.902469
+cosmological_parameters--h0     0.649381
+firecrown_two_point--source_1_delta_z     -0.0281666
+firecrown_two_point--source_2_delta_z     -0.0076789
+firecrown_two_point--source_3_delta_z     -0.0325994
+firecrown_two_point--source_4_delta_z     -0.033337
+firecrown_two_point--mult_bias     -0.0092786
+firecrown_two_point--a_ia     0.610562
+firecrown_two_point--eta_eff     -4.9999
+cosmological_parameters--sigma_8     0.63212
+data_vector--2pt_chi2     nan
+prior     16.2582
+like     -112.817
+post     -96.4576
+weight     1.91464e-05

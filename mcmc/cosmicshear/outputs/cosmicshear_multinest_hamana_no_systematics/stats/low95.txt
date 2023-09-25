@@ -1,0 +1,13 @@
+#parameter low95
+#output.txt
+cosmological_parameters--omega_c     0.133434
+cosmological_parameters--omega_b     0.0385706
+cosmological_parameters--log10as_hamana     0.332244
+cosmological_parameters--n_s     0.891553
+cosmological_parameters--h0     0.656657
+cosmological_parameters--sigma_8     0.788191
+data_vector--2pt_chi2     nan
+prior     6.38771
+like     -122.164
+post     -115.776
+weight     3.01431e-05

@@ -1,0 +1,20 @@
+#parameter uerr95
+#output.txt
+cosmological_parameters--omch2     0.268222
+cosmological_parameters--ombh2     0.0257333
+cosmological_parameters--h0     0.899988
+cosmological_parameters--log10as     3.55553
+cosmological_parameters--n_s     1.06999
+firecrown_two_point--source_0_delta_z     0.0262881
+firecrown_two_point--source_1_delta_z     0.0123091
+firecrown_two_point--source_2_delta_z     0.0339839
+firecrown_two_point--source_3_delta_z     0.0345823
+firecrown_two_point--mult_bias     0.00907801
+firecrown_two_point--a_ia     4.67823
+firecrown_two_point--eta_eff     4.63904
+cosmological_parameters--sigma_8     1.00281
+data_vector--2pt_chi2     nan
+prior     18.2708
+like     -195.7
+post     -178.913
+weight     0.000192101

@@ -1,0 +1,13 @@
+#parameter uerr95
+#output.txt
+cosmological_parameters--omch2     0.106938
+cosmological_parameters--ombh2     0.0257052
+cosmological_parameters--h0     0.899999
+cosmological_parameters--log10as     5.99958
+cosmological_parameters--n_s     1.06799
+cosmological_parameters--sigma_8     1.47038
+data_vector--2pt_chi2     nan
+prior     nan
+like     -21.9855
+post     -15.3139
+weight     0.000157821

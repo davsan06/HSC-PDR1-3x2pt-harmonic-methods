@@ -1,0 +1,8 @@
+a_ia = 0.299383
+eta_eff = -3.90594
+mult_bias = -0.00473034
+source_0_delta_z = 0.00322684
+source_1_delta_z = -0.000155567
+source_2_delta_z = -0.0079847
+source_3_delta_z = -0.000255337
+z_piv = 0.62

@@ -1,0 +1,20 @@
+#parameter lerr68
+#output.txt
+cosmological_parameters--omch2     0.134036
+cosmological_parameters--ombh2     0.0202205
+cosmological_parameters--h0     0.740749
+cosmological_parameters--log10as     1.59933
+cosmological_parameters--n_s     0.958201
+firecrown_two_point--source_0_delta_z     -0.0163783
+firecrown_two_point--source_1_delta_z     -0.00765554
+firecrown_two_point--source_2_delta_z     -0.0240265
+firecrown_two_point--source_3_delta_z     -0.0193577
+firecrown_two_point--mult_bias     -0.00546994
+firecrown_two_point--a_ia     -2.97529
+firecrown_two_point--eta_eff     -3.17631
+cosmological_parameters--sigma_8     0.638267
+data_vector--2pt_chi2     nan
+prior     17.4946
+like     -197.185
+post     -181.887
+weight     0.000142055

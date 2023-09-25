@@ -1,0 +1,13 @@
+#parameter peak1d
+#output.txt
+cosmological_parameters--omch2     0.0439256
+cosmological_parameters--ombh2     0.0197719
+cosmological_parameters--h0     0.875964
+cosmological_parameters--log10as     5.21509
+cosmological_parameters--n_s     1.04354
+cosmological_parameters--sigma_8     1.2362
+data_vector--2pt_chi2     nan
+prior     nan
+like     -23.4668
+post     -16.7951
+weight     0.000151812

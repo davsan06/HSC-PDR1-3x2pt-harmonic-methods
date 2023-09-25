@@ -1,0 +1,13 @@
+#parameter mean std_dev
+#output.txt
+cosmological_parameters--omega_c   1.850910e-01   4.837931e-02
+cosmological_parameters--omega_b   4.417931e-02   4.292920e-03
+cosmological_parameters--log10as_hamana   1.253531e+00   4.844560e-01
+cosmological_parameters--n_s   9.940415e-01   5.306870e-02
+cosmological_parameters--h0   7.536932e-01   4.974569e-02
+cosmological_parameters--sigma_8   9.612815e-01   9.406808e-02
+data_vector--2pt_chi2   nan   nan
+prior   6.387712e+00   8.881784e-16
+like   -1.196572e+02   1.174920e+00
+post   -1.132695e+02   1.174920e+00
+weight   1.193882e-04   4.247296e-05

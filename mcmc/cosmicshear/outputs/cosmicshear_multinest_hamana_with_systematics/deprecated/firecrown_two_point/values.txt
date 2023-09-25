@@ -1,0 +1,8 @@
+a_ia = 0.0
+eta_eff = 0.0
+mult_bias = 0.0
+source_0_delta_z = 0.0
+source_1_delta_z = 0.0
+source_2_delta_z = 0.0
+source_3_delta_z = 0.0
+z_piv = 0.62

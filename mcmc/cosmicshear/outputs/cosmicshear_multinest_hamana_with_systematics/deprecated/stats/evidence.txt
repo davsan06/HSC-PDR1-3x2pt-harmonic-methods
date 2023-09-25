@@ -1,0 +1,3 @@
+#logz    logz_sigma
+#output.txt
+-3.825346e+02    9.970688e-02

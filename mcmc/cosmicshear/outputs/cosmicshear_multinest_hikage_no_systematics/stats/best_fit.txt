@@ -1,0 +1,13 @@
+#parameter value
+#output.txt
+cosmological_parameters--omch2        0.0434847
+cosmological_parameters--ombh2        0.0198717
+cosmological_parameters--h0        0.864936
+cosmological_parameters--log10as        5.56477
+cosmological_parameters--n_s        1.06986
+cosmological_parameters--sigma_8        1.45871
+data_vector--2pt_chi2        nan
+prior        6.67166
+like        -21.9855
+post        -15.3139
+weight        4.64982e-05
