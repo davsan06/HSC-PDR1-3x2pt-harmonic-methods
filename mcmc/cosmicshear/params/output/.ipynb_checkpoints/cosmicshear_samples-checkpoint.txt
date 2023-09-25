@@ -1,0 +1,126 @@
+#cosmological_parameters--omch2	cosmological_parameters--ombh2	cosmological_parameters--h0	cosmological_parameters--log10as	cosmological_parameters--n_s	firecrown_two_point--source_0_delta_z	firecrown_two_point--source_1_delta_z	firecrown_two_point--source_2_delta_z	firecrown_two_point--source_3_delta_z	firecrown_two_point--source_0_sigma_z	firecrown_two_point--source_1_sigma_z	firecrown_two_point--source_2_sigma_z	firecrown_two_point--source_3_sigma_z	firecrown_two_point--mult_bias	firecrown_two_point--a_ia	firecrown_two_point--eta_eff	COSMOLOGICAL_PARAMETERS--SIGMA_8	prior	like	post
+#sampler=maxlike
+#n_varied=16
+#module_0=consistency 1.0
+#module_1=samplelog10As #name from ini file
+#module_2=camb 2.0
+## CITE http://arxiv.org/abs/1201.3654
+## CITE http://arxiv.org/abs/astro-ph/9911177
+#module_3=firecrown_likelihood #name from ini file
+#timestamp=2023-03-13T11:13:59.951108
+#platform=Linux-5.14.21-150400.24.46_12.0.63-cray_shasta_c-x86_64-with-glibc2.31
+#platform_version=#1 SMP Fri Mar 3 22:39:37 UTC 2023 (6e164f9)
+#uuid=a33c017af76f4325b96dafd5342a947c
+#cosmosis_git_version=
+#csl_git_version=
+#cwd_git_version=51be74aa237efea3165926b4c638adb9d191435c
+#hostname=login06
+#username=davidsan
+#workdir=/pscratch/sd/d/davidsan/new_firecrown/firecrown/examples/hsc_3x2pt/cosmicshear/params
+#tolerance=0.001
+#maxiter=1000
+#output_ini=/pscratch/sd/d/davidsan/new_firecrown/firecrown/examples/hsc_3x2pt/cosmicshear/output/cs_maxlike/output.txt
+#output_covmat=
+#method=Nelder-Mead
+#max_posterior=False
+## START_OF_PARAMS_INI
+## [runtime]
+## sampler = maxlike
+## root = /pscratch/sd/d/davidsan/new_firecrown/firecrown/examples/hsc_3x2pt/cosmicshear/params
+## 
+## [output]
+## filename = output/cosmicshear_samples.txt
+## format = text
+## verbosity = 0
+## lock = F
+## privacy = F
+## 
+## [pipeline]
+## modules = consistency samplelog10As camb firecrown_likelihood
+## values = /pscratch/sd/d/davidsan/new_firecrown/firecrown/examples/hsc_3x2pt/cosmicshear/values/cosmicshear_values.ini
+## priors = /pscratch/sd/d/davidsan/new_firecrown/firecrown/examples/hsc_3x2pt/cosmicshear/priors/cosmicshear_priors.ini
+## extra_output = cosmological_parameters/sigma_8
+## likelihoods = firecrown
+## quiet = T
+## debug = F
+## timing = F
+## fast_slow = F
+## 
+## [consistency]
+## file = /pscratch/sd/d/davidsan/cosmosis-standard-library/utility/consistency/consistency_interface.py
+## 
+## [samplelog10As]
+## file = /pscratch/sd/d/davidsan/cosmosis-standard-library/module_desc/samplelog10As.py
+## 
+## [camb]
+## file = /pscratch/sd/d/davidsan/cosmosis-standard-library/boltzmann/camb/camb_interface.py
+## mode = power
+## lmax = 2500
+## feedback = 3
+## accuracyboost = 1.1
+## do_tensors = T
+## do_lensing = T
+## nonlinear = pk
+## halofit_version = takahashi
+## zmin_background = 0.
+## zmax_background = 4.
+## nz_background = 401
+## kmin = 1e-4
+## kmax = 50.0
+## kmax_extrapolate = 500.0
+## nk = 700
+## 
+## [firecrown_likelihood]
+## file = /pscratch/sd/d/davidsan/new_firecrown/firecrown/build/lib/firecrown/connector/cosmosis/likelihood.py
+## firecrown_config = /pscratch/sd/d/davidsan/new_firecrown/firecrown/examples/hsc_3x2pt/cosmicshear/cosmicshear.py
+## require_nonlinear_pk = True
+## 
+## [maxlike]
+## output_ini = /pscratch/sd/d/davidsan/new_firecrown/firecrown/examples/hsc_3x2pt/cosmicshear/output/cs_maxlike/output.txt
+## maxiter = 1000
+## tolerance = 1e-3
+## 
+## END_OF_PARAMS_INI
+## START_OF_VALUES_INI
+## [cosmological_parameters]
+## omch2 = 0.03 0.08 0.7
+## ombh2 = 0.019 0.022 0.026
+## h0 = 0.6 0.75 0.9
+## a_s = 2.1e-9
+## log10as = 1.5 3.75 6.0
+## n_s = 0.87 0.971 1.07
+## omega_k = 0.0
+## tau = 0.08
+## w = -1.0
+## wa = 0.0
+## omnuh2 = 0.0
+## 
+## [firecrown_two_point]
+## source_0_delta_z = -0.0285 0.0 0.0285
+## source_1_delta_z = -0.0135 0.0 0.0135
+## source_2_delta_z = -0.0383 0.0 0.0383
+## source_3_delta_z = -0.0376 0.0 0.0376
+## source_0_sigma_z = 0.95 1.0 1.05
+## source_1_sigma_z = 0.95 1.0 1.05
+## source_2_sigma_z = 0.95 1.0 1.05
+## source_3_sigma_z = 0.95 1.0 1.05
+## mult_bias = -1.0 0.0 1.0
+## a_ia = -5.0 0.0 5.0
+## eta_eff = -5.0 0.0 5.0
+## z_piv = 0.62
+## 
+## END_OF_VALUES_INI
+## START_OF_PRIORS_INI
+## [firecrown_two_point]
+## source_0_delta_z = gaussian 0.0 0.0285
+## source_1_delta_z = gaussian 0.0 0.0135
+## source_2_delta_z = gaussian 0.0 0.0383
+## source_3_delta_z = gaussian 0.0 0.0376
+## source_0_sigma_z = gaussian 1.0 0.05
+## source_1_sigma_z = gaussian 1.0 0.05
+## source_2_sigma_z = gaussian 1.0 0.05
+## source_3_sigma_z = gaussian 1.0 0.05
+## mult_bias = gaussian 0.0 1.0
+## 
+## END_OF_PRIORS_INI
+0.07575633384572703	0.019300177275942607	0.8998443077519342	4.182993264254698	0.9616725694366551	-0.0070988086214064244	0.0006994266591592337	0.0007324795901808775	0.00031824603297757326	1.0074120955531993	0.9981967072195944	1.0009935951670557	1.007398338653032	-0.031085656187059385	-0.15831132540197412	0.6036251316335886	17.059467783715572	23.56453046811536	-61.25640510845249	-37.69187464033713
