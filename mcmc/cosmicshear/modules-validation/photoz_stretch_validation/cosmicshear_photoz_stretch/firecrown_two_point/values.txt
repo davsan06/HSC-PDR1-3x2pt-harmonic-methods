@@ -1,0 +1,4 @@
+source_0_sigma_z = 0.2
+source_1_sigma_z = 0.2
+source_2_sigma_z = 0.2
+source_3_sigma_z = 0.2
