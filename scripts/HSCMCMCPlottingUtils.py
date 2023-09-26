@@ -113,6 +113,7 @@ parameters_dict_desc = {# Cosmology parameters
                         'cosmological_parameters--log10as':'$\ln(10^{10} A_s)$',
                         'cosmological_parameters--log10as_hamana':'$\ln(10^{9} A_s)$',
                         'cosmological_parameters--n_s':'$n_{s}$',
+                        'cosmological_parameters--sigma_8':'$\sigma_8$',
                         # Lens photo-z uncert.
                         'firecrown_two_point--lens_0_delta_z':'$\Delta z^{lens}_1$',
                         'firecrown_two_point--lens_1_delta_z':'$\Delta z^{lens}_2$',
@@ -166,6 +167,7 @@ parameters_dict_desc_hamana = {# Cosmology parameters
                                 'cosmological_parameters--n_s':'$n_{s}$',
                                 'COSMOLOGICAL_PARAMETERS--SIGMA_8':'$\sigma_8$',
                                 'COSMOLOGICAL_PARAMETERS--SIGMA_12':'$\sigma_12$',
+                                'cosmological_parameters--sigma_8':'$\sigma_8$',
                                 # Photo-z WL
                                 'firecrown_two_point--source_1_delta_z':'$\Delta z^{source}_1$',
                                 'firecrown_two_point--source_2_delta_z':'$\Delta z^{source}_2$',
@@ -413,7 +415,7 @@ def cosmosis_header(fname):
     # Initialize empty list
     parameters_latex = list()
     # Obtain corresponding latex labels
-    if 'hikage' in fname:
+    if 'hikage' in fname or 'txpipe' in fname:
         for par in parameters_cosmosis:
             if par in parameters_dict_desc.keys():
                 # print(parameters_dict_desc[par])
@@ -682,7 +684,6 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
             plt.close()
             # posterior = sample[:,1]
             parameters = list(np.copy(parameters_hsc_hamana))
-            # print(parameters)
             # Re-scaling multiplicative shear bias 100 * Delta m
             col = parameters.index('m')
             sample[:,col] /= 100
