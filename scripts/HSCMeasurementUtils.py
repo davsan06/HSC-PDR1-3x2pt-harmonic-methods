@@ -196,7 +196,6 @@ def HikageShear_Dells():
     return(ell, Dell, err)
 
 def NicolaShear_Dells(i,j):
-    print('>>  Cosmic shear - Nicola et al.')
     # A. Nicola et al. Cosmic shear with HSC (Gaussian cov.)
     s_and = sacc.Sacc.load_fits('/pscratch/sd/d/davidsan/3x2pt-HSC/pipeline_test/andrina_datavectors/cls_signal_covG_HSC.fits')
     s_and_ng = sacc.Sacc.load_fits('/pscratch/sd/d/davidsan/3x2pt-HSC/pipeline_test/andrina_datavectors/cls_noise_covNG_HSC.fits')
@@ -592,7 +591,8 @@ def Generate_Hikage_Shear_Cells():
     # Outputs:
     # - Cells data vector
     print('<< Generating Hikage et al. cosmic shear data vector in Sacc format>>')
-    path_to_save = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw'
+    # path_to_save = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw'
+    path_to_save = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/hikage/sacc/'
     # Initialize empty sacc file
     s = sacc.Sacc()
     nbins_src = 4
@@ -620,21 +620,21 @@ def Generate_Hikage_Shear_Cells():
                 # print(i,j)
                 if (i == 0) and (j == 0):
                     hik_ind = 1
-                elif (i == 0) and (j == 1):
+                elif (i == 1) and (j == 0):
                     hik_ind = 2
-                elif (i == 0) and (j == 2):
+                elif (i == 2) and (j == 0):
                     hik_ind = 3
-                elif (i == 0) and (j == 3):
+                elif (i == 3) and (j == 0):
                     hik_ind = 4
                 elif (i == 1) and (j == 1):
                     hik_ind = 5
-                elif (i == 1) and (j == 2):
+                elif (i == 2) and (j == 1):
                     hik_ind = 6
-                elif (i == 1) and (j == 3):
+                elif (i == 3) and (j == 1):
                     hik_ind = 7
                 elif (i == 2) and (j == 2):
                     hik_ind = 8
-                elif (i == 2) and (j == 3):
+                elif (i == 3) and (j == 2):
                     hik_ind = 9
                 elif (i == 3) and (j == 3):
                     hik_ind = 10
@@ -660,10 +660,9 @@ def Generate_Hikage_Shear_Cells():
     hsc_covariance_Cell = hsc_covariance / mat
     # Introducing covariance
     # s.add_covariance(hsc_covariance_Cell)
-    s.add_covariance(2 * np.pi * hsc_covariance_Cell)
+    s.add_covariance(hsc_covariance_Cell)
     # Save the data vector
-    # s.save_fits(os.path.join(path_to_save, 'summary_statistics_fourier_Hik_shear_Cells_Hik_covmat_Hik_dndz.sacc'), overwrite=False)
-    s.save_fits(os.path.join(path_to_save, 'summary_statistics_fourier_Hik_shear_Cells_Hik_2pi_times_covmat_Hik_dndz.sacc'), overwrite=False)
+    s.save_fits(os.path.join(path_to_save, 'summary_statistics_fourier_Hik_shear_Cells_Hik_covmat_Hik_dndz.sacc'), overwrite=True)
     return(s)
 
 def Generate_Hamana_Shear_CorrFunc():
@@ -1012,21 +1011,21 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_lit
                     # mask = (ell > 300)*(ell < 1900)
                     if (i == 0) and (j == 0):
                         hik_ind = 1
-                    elif (i == 0) and (j == 1):
+                    elif (i == 1) and (j == 0):
                         hik_ind = 2
-                    elif (i == 0) and (j == 2):
+                    elif (i == 2) and (j == 0):
                         hik_ind = 3
-                    elif (i == 0) and (j == 3):
+                    elif (i == 3) and (j == 0):
                         hik_ind = 4
                     elif (i == 1) and (j == 1):
                         hik_ind = 5
-                    elif (i == 1) and (j == 2):
+                    elif (i == 2) and (j == 1):
                         hik_ind = 6
-                    elif (i == 1) and (j == 3):
+                    elif (i == 3) and (j == 1):
                         hik_ind = 7
                     elif (i == 2) and (j == 2):
                         hik_ind = 8
-                    elif (i == 2) and (j == 3):
+                    elif (i == 3) and (j == 2):
                         hik_ind = 9
                     elif (i == 3) and (j == 3):
                         hik_ind = 10
@@ -1034,11 +1033,11 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_lit
                     err = err_hik[:,hik_ind] * 10**4
                     # print('Error Hikage')
                     axs[axind].errorbar(ell_hik, Dell, yerr=err, 
-                                      c=colors[7],
-                                      fmt='o', 
-                                      markersize=3.0, 
-                                      capsize=2,
-                                      label='Hikage et al.')
+                                        c=colors[7],
+                                        fmt='o', 
+                                        markersize=3.0, 
+                                        capsize=2,
+                                        label='Hikage et al.')
                     ###############################################################
         # Read Nicola et al.
         print('>>  Cosmic shear - Nicola et al.')
@@ -1194,6 +1193,8 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_lit
     else:
         plt.legend(bbox_to_anchor=(0.0, 2.45),frameon=False,fontsize=12)
     if save_fig == True:
+        print('>> Saving figure ...')
+        print(textfig)
         plt.savefig(f'{textfig}.png',
                     dpi=300,
                     bbox_inches='tight')
@@ -1394,24 +1395,36 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
                 for j in np.arange(nbins_lens):
                     if i == j:
                         # read cosmic shear data points
-                        ell, Cell, cov = s.get_ell_cl("galaxy_density_cl", f'lens_{i}', f'lens_{j}', return_cov=True)
+                        if 'summary' in fn:
+                            print('DV with covariance')
+                            ell, Cell, cov = s.get_ell_cl("galaxy_density_cl", f'lens_{i}', f'lens_{j}', return_cov=True)
+                        elif 'twopoint' in fn:
+                            print('DV w/o covariance')
+                            ell, Cell = s.get_ell_cl("galaxy_density_cl", f'lens_{i}', f'lens_{j}', return_cov=False)
                         noise = s.get_tag("n_ell", data_type="galaxy_density_cl", tracers=(f"lens_{i}",f"lens_{j}"))
-                        # Cell = Cell - noise
-                        # extracting error from covariance
-                        err = np.sqrt(np.diag(cov))
+                        Cell = Cell - noise
                         # computing prefactor 
                         pref = ell * (ell + 1) / (2 * np.pi)
                         Dell = pref * Cell * 10
-                        err = pref * err * 10
-
-                        # plot
-                        axs[i].errorbar(ell, Dell, err, 
-                                          color=colors[k], 
-                                          fmt='o', 
-                                          markersize=3.0, 
-                                          capsize=2,
-                                          alpha=0.3,
-                                          label=f'{lab.upper()}')
+                        # print(ell,Dell)
+                        # extracting error from covariance
+                        if 'summary' in fn:
+                            err = np.sqrt(np.diag(cov))
+                            err = pref * err * 10
+                            # plot
+                            axs[i].errorbar(ell, Dell, err, 
+                                            color=colors[k], 
+                                            fmt='o', 
+                                            markersize=3.0, 
+                                            capsize=2,
+                                            alpha=0.3,
+                                            label=f'{lab.upper()}')
+                        elif 'twopoint' in fn:
+                            axs[i].scatter(ell, Dell,
+                                           color=colors[k+1],
+                                           s=2.5,
+                                           alpha=1.0,
+                                           label=f'{lab.upper()}')
             # new color for the next field
             k += 1
     if add_combined is not None:
