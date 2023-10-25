@@ -10,6 +10,7 @@ from matplotlib import rc
 # plt.style.use('/global/cscratch1/sd/davidsan/dsc_custom.mplstyle')
 import scipy.stats as stats
 from numpy.random import normal, uniform
+from scipy.special import ndtri
 
 # Matplotlib formatting
 # Matplotlib settings
@@ -624,14 +625,23 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
             # Re-scaling multiplicative shear bias 100 * Delta m
             col = parameters.index('m')
             sample[:,col] /= 100
+            # sigmas = np.array([2.85, 1.35, 3.83, 3.76])/100
             col = parameters.index('$\Delta z^{source}_1$')
-            sample[:,col] /= 100
+            sigma = 2.85 / 100
+            sample[:,col] = ndtri(sample[:,col]) * sigma
+            # sample[:,col] /= 100
             col = parameters.index('$\Delta z^{source}_2$')
-            sample[:,col] /= 100
+            sigma = 1.35 / 100
+            sample[:,col] = ndtri(sample[:,col]) * sigma
+            # sample[:,col] /= 100
             col = parameters.index('$\Delta z^{source}_3$')
-            sample[:,col] /= 100
+            sigma = 3.83 / 100
+            sample[:,col] = ndtri(sample[:,col]) * sigma
+            # sample[:,col] /= 100
             col = parameters.index('$\Delta z^{source}_4$')
-            sample[:,col] /= 100
+            sigma = 3.76 / 100
+            sample[:,col] = ndtri(sample[:,col]) * sigma
+            # sample[:,col] /= 100
             # Add to already initialize chain
             c.add_chain(sample,
                         parameters=parameters,
@@ -852,7 +862,7 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
         k += 1
     # Config chain
     c.configure(flip=False,
-                linestyles=["-"]*len(fname_list),
+                # linestyles=["-"]*len(fname_list),
                 # linewidths=[1.0]+[1.2]*len(fname_list),
                 shade=[False]+[False]*len(fname_list),
                 legend_kwargs={"fontsize": 5},#, "loc": "upper right"},
