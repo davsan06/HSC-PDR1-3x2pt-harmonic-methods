@@ -1131,7 +1131,7 @@ def plot_full_shear_hikage(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2p
     plt.savefig(os.path.join(savepath,f'full_shear_hikage_{labelpng}.png'),
                dpi=300,
                bbox_inches='tight')
-    Splt.savefig(os.path.join(savepath,f'full_shear_hikage_{labelpng}.pdf'),
+    plt.savefig(os.path.join(savepath,f'full_shear_hikage_{labelpng}.pdf'),
                dpi=300,
                bbox_inches='tight')
     plt.show()
