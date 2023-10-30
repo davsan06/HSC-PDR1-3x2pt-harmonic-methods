@@ -898,6 +898,9 @@ def plot_Omegam_sigma8_S8(chain,labelpng,S8_alpha,savepath='/pscratch/sd/d/david
     plt.savefig(os.path.join(savepath,f'Om_sigma8_S8_{labelpng}.png'),
                dpi=300,
                bbox_inches='tight')
+    plt.savefig(os.path.join(savepath,f'Om_sigma8_S8_{labelpng}.pdf'),
+               dpi=300,
+               bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
@@ -1126,6 +1129,9 @@ def plot_full_shear_hikage(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2p
                              watermark="Preliminary",
                              figsize="GROW")
     plt.savefig(os.path.join(savepath,f'full_shear_hikage_{labelpng}.png'),
+               dpi=300,
+               bbox_inches='tight')
+    Splt.savefig(os.path.join(savepath,f'full_shear_hikage_{labelpng}.pdf'),
                dpi=300,
                bbox_inches='tight')
     plt.show()
