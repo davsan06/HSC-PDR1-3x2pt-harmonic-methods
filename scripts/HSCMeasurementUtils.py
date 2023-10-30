@@ -983,12 +983,13 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_lit
                         err = pref * err * 10 ** 4
                         # plot
                         axs[axind].errorbar(ell, Dell, err, 
-                                          color=colors[k], 
+                                          # color=colors[k], 
                                           fmt='o', 
                                           markersize=3.0, 
                                           capsize=2,
-                                          alpha=0.3,
-                                          label=f'{lab.upper()}')
+                                          alpha=1.0,
+                                          label=f'{lab}')
+                                          # label=f'{lab.upper()}')
             # new color for the next field
             k += 1
 
@@ -1066,15 +1067,16 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_lit
         textfig += '_HikageSacc'
         for i in np.arange(nbins_src):
             for j in np.arange(nbins_src):
-                if i >= j:
-                    axind = (i,j)
+                if i <= j:
+                    axind = (j,i)
                     if just_auto:
                         if i == j:
                             axind = i
                             pass
                         else:
                             continue
-                    fname_hik = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw/summary_statistics_fourier_Hik_shear_Cells_Hik_covmat_Hik_dndz.sacc'
+                    # fname_hik = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw/summary_statistics_fourier_Hik_shear_Cells_Hik_covmat_Hik_dndz.sacc'
+                    fname_hik = '/global/cfs/projectdirs/lsst/groups/LSS/HSC_reanalysis/data_javi/cls_hscpdr1_hikage_wcov_cholesky.sacc'
                     # Covariance * 2pi
                     # fname_hik = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw/summary_statistics_fourier_Hik_shear_Cells_Hik_2pi_times_covmat_Hik_dndz.sacc'
                     s_hik = sacc.Sacc.load_fits(fname_hik)
