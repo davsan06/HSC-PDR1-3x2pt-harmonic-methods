@@ -460,35 +460,42 @@ def S8(sample,parameters,alpha=0.5):
     
     # Extract om and sigma8
     om=sample[:,parameters.index('$\\Omega_m$')]
-    # plt.hist(om, histtype='step')
-    # plt.title('$\Omega_m$')
-    # plt.show()
-    # plt.close()
-    # print(parameters.index('$\\Omega_m$'))
-    # print('om',np.mean(om))
+    """ plt.hist(om, histtype='step')
+    plt.title('$\Omega_m$')
+    plt.show()
+    plt.close()
+    print(parameters.index('$\\Omega_m$'))
+    print('om',np.mean(om)) """
     sigma8=sample[:,parameters.index('$\\sigma_8$')]
-    # plt.hist(sigma8, histtype='step')
-    # plt.title('$\sigma_8$')
-    # plt.show()
-    # plt.close()
-    # print(parameters.index('$\\sigma_8$'))
-    # print('sigma8',np.mean(sigma8))
+    """ plt.hist(sigma8, histtype='step')
+    plt.title('$\sigma_8$')
+    plt.show()
+    plt.close()
+    print(parameters.index('$\\sigma_8$'))
+    print('sigma8',np.mean(sigma8)) """
     # Compute S8
     S8=sigma8*(om/0.3)**alpha
-    # plt.hist(S8, histtype='step')
-    # plt.title('$S_8$')
-    # plt.show()
-    # plt.close()
-    # print('S8',np.mean(S8))
+    """ plt.hist(S8, histtype='step')
+    plt.title('$S_8$')
+    plt.show()
+    plt.close()
+    print('S8',np.mean(S8)) """
+    # Find the slope of the correlation between om and sigma8
+    slope, intercept, r_value, p_value, std_err = stats.linregress(om,sigma8)
+    # Print the slope info
+    print(f'Slope Om-sigma8: {slope}')
     # Add column to the main sample
     sample = np.c_[sample,S8]
     parameters.append('$S_8$')
     
     return(sample,parameters)
 
-def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add_hsc_hamana=False,add_nicola=False,add_prior=True):
+def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add_hsc_hamana=False,add_nicola=False,add_prior=True,S8_alpha=0.5,show_auxplots=False):
     # fname - path to txt chain (could be a list of chains to compare)
     # add_hsc add comparison with HSC contours
+
+    print('Generating chainconsumer chain')
+    print('>> Default alpha for S8: ', S8_alpha, ',   S8 = sigma8*(om/0.3)**alpha')
     
     # Output - chainconsumer chain
     fname_hsc = os.path.join('/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/hsc_chains/using_cls/HSC_Y1_LCDM_post_fid.txt')
@@ -591,37 +598,29 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
     for fname,chain_label in zip(fname_list,chain_label_list):
         print(f'Adding ... {chain_label}')
         if fname == fname_hsc:
+            # Read Hikage et al. HSC official chain
             sample = np.loadtxt(fname)
+            # All weights are 1 
             weigths = sample[:,0]
-            plt.plot(np.arange(len(weigths)), weigths)
-            plt.show()
-            plt.close()
+            if show_auxplots == True:
+                # Weights checking
+                plt.plot(np.arange(len(weigths)), weigths)
+                plt.show()
+                plt.close()
+            # Extract the posterior
             posterior = sample[:,1]
+            # Read the parameters
             parameters = list(np.copy(parameters_hsc))
-            # Appendin S8 derived parameter
-            sample,parameters = S8(sample=sample,parameters=parameters,alpha=0.5)
-            fig, axs = plt.subplots(nrows=1, ncols=6, figsize=(18, 3))
-            
-            axs[0].hist(sample[:,parameters.index('$\Omega_{cdm} \cdot h^2$')],histtype='step')
-            axs[0].set_title('$\Omega_{cdm} \cdot h^2$')
-            
-            axs[1].hist(sample[:,parameters.index('$\Omega_b \cdot h^2$')],histtype='step')
-            axs[1].set_title('$\Omega_b \cdot h^2$')
-                           
-            axs[2].hist(sample[:,parameters.index('$\Omega_m$')],histtype='step')
-            axs[2].set_title('$\Omega_m$')
-            
-            axs[3].hist(sample[:,parameters.index('$\sigma_8$')],histtype='step')
-            axs[3].set_title('$\sigma_8$')
-            
-            axs[4].hist(sample[:,parameters.index('$S_8$')],histtype='step')
-            axs[4].set_title('$S_8$')
-
-            axs[5].hist(sample[:,parameters.index('$\ln(10^{10} A_s)$')],histtype='step')
-            axs[5].set_title('$\ln(10^{10} A_s)$')
-            
-            plt.show()
-            plt.close()
+            # Appending S8 derived parameter
+            sample,parameters = S8(sample=sample,parameters=parameters,alpha=S8_alpha)
+            # S8_hikage = sample[:,parameters.index('$S_8$')]
+            if show_auxplots:
+                fig, axs = plt.subplots(nrows=1, ncols=6, figsize=(9, 1.5))
+                for ind, par in enumerate(['$\Omega_{cdm} \cdot h^2$', '$\Omega_b \cdot h^2$', '$\Omega_m$', '$\sigma_8$', '$S_8$', '$\ln(10^{10} A_s)$']):
+                    axs[ind].hist(sample[:,parameters.index(par)],density=True,histtype='step')
+                    axs[ind].set_title(par)
+                plt.show()
+                plt.close()
             # Re-scaling multiplicative shear bias 100 * Delta m
             col = parameters.index('m')
             sample[:,col] /= 100
@@ -646,7 +645,7 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
             c.add_chain(sample,
                         parameters=parameters,
                         weights=weigths,
-                        # posterior=posterior,
+                        posterior=posterior,
                         kde=kde,
                         name=chain_label)
         elif fname == fname_nicola:
@@ -657,26 +656,17 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
             # Sampling Om_c and Om_b
             sample,parameters=omega_m(sample=sample,parameters=parameters)
             # Appendin S8 derived parameter
-            sample,parameters = S8(sample=sample,parameters=parameters,alpha=0.5)
-            fig, axs = plt.subplots(nrows=1, ncols=5, figsize=(18, 3))
-            
-            axs[0].hist(sample[:,parameters.index('$\Omega_{cdm}$')],histtype='step')
-            axs[0].set_title('$\Omega_{cdm}$')
-            
-            axs[1].hist(sample[:,parameters.index('$\Omega_b$')],histtype='step')
-            axs[1].set_title('$\Omega_b$')
-                           
-            axs[2].hist(sample[:,parameters.index('$\Omega_m$')],histtype='step')
-            axs[2].set_title('$\Omega_m$')
-            
-            axs[3].hist(sample[:,parameters.index('$\sigma_8$')],histtype='step')
-            axs[3].set_title('$\sigma_8$')
-            
-            axs[4].hist(sample[:,parameters.index('$S_8$')],histtype='step')
-            axs[4].set_title('$S_8$')
-            
-            plt.show()
-            plt.close()
+            sample,parameters = S8(sample=sample,parameters=parameters,alpha=S8_alpha)
+
+            if show_auxplots == True:
+                fig, axs = plt.subplots(nrows=1, ncols=5, figsize=(9, 1.5))
+
+                for i, par in enumerate(['$\Omega_{cdm}$', '$\Omega_b$', '$\Omega_m$', '$\sigma_8$', '$S_8$']):
+                    axs[i].hist(sample[:,parameters.index(par)],density=True,histtype='step')
+                    axs[i].set_title(par)
+                
+                plt.show()
+                plt.close()
             # Add to already initialize chain
             c.add_chain(sample,
                         parameters=parameters,
@@ -688,10 +678,11 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
         elif fname == fname_hsc_hamana:
             sample = np.loadtxt(fname)
             weights = sample[:,0]
-            # Weights checkin
-            plt.plot(np.arange(len(weights)),weights)
-            plt.show()
-            plt.close()
+            if show_auxplots == True:
+                # Weights checking
+                plt.plot(np.arange(len(weights)),weights)
+                plt.show()
+                plt.close()
             # posterior = sample[:,1]
             parameters = list(np.copy(parameters_hsc_hamana))
             # Re-scaling multiplicative shear bias 100 * Delta m
@@ -709,46 +700,18 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
             sample[:,col] /= 100
             col = parameters.index('$h$')
             sample[:,col] /= 100
-            # Histograms
-            fig, axs = plt.subplots(nrows=1, ncols=6, figsize=(18, 3))
-            
-            axs[0].hist(sample[:,parameters.index('$\Omega_{cdm}$')],histtype='step')
-            axs[0].set_title('$\Omega_{cdm}$')
-            
-            axs[1].hist(sample[:,parameters.index('$\Omega_b$')],histtype='step')
-            axs[1].set_title('$\Omega_b$')
-                           
-            axs[2].hist(sample[:,parameters.index('$\Omega_m$')],histtype='step')
-            axs[2].set_title('$\Omega_m$')
-            
-            axs[3].hist(sample[:,parameters.index('$\sigma_8$')],histtype='step')
-            axs[3].set_title('$\sigma_8$')
-            
-            axs[4].hist(sample[:,parameters.index('$S_8$')],histtype='step')
-            axs[4].set_title('$S_8$')
 
-            axs[5].hist(sample[:,parameters.index('$\ln(10^{9} A_s)$')],histtype='step')
-            axs[5].set_title('$\ln(10^{9} A_s)$')
+            if show_auxplots == True:
+                # Histograms
+                fig, axs = plt.subplots(nrows=1, ncols=6, figsize=(9, 1.5))
+                
+                for ind, par in enumerate(['$\Omega_{cdm}$', '$\Omega_b$', '$\Omega_m$', '$\sigma_8$', '$S_8$', '$\ln(10^{9} A_s)$']):
+                    axs[ind].hist(sample[:,parameters.index(par)],density=True,histtype='step')
+                    axs[ind].set_title(par)
+                
+                plt.show()
+                plt.close()
             
-            plt.show()
-            plt.close()
-            
-            # fig, axs = plt.subplots(nrows=1, ncols=4, figsize=(15, 3))
-            # 
-            # axs[0].hist(sample[:,parameters.index('$\Delta z^{source}_1$')],histtype='step')
-            # axs[0].set_title('$\Delta z^{source}_1$')
-            # 
-            # axs[1].hist(sample[:,parameters.index('$\Delta z^{source}_2$')],histtype='step')
-            # axs[1].set_title('$\Delta z^{source}_2$')
-            #                
-            # axs[2].hist(sample[:,parameters.index('$\Delta z^{source}_3$')],histtype='step')
-            # axs[2].set_title('$\Delta z^{source}_3$')
-            # 
-            # axs[3].hist(sample[:,parameters.index('$\Delta z^{source}_4$')],histtype='step')
-            # axs[3].set_title('$\Delta z^{source}_4$')
-            # 
-            # plt.show()
-            # plt.close()
             # Add to already initialize chain
             c.add_chain(sample,
                         parameters=parameters,
@@ -786,7 +749,7 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
                 # Sampling Om_c*h^2 and Om_b*h^2
                 sample,parameters=omega_m(sample=sample,parameters=parameters)
                 # Computing S_8
-                sample,parameters=S8(sample=sample,parameters=parameters,alpha=0.5)
+                sample,parameters=S8(sample=sample,parameters=parameters,alpha=S8_alpha)
                 # print(sample,parameters)
             else:
                 print('>> Chain with weights')
@@ -796,49 +759,45 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
                 parameters = cosmosis_header(fname=fname)
                 # Extract weights and posterior
                 weigths = sample[:,parameters.index('$weight$')]
-                plt.plot(np.arange(len(weigths)),weigths)
-                plt.show()
-                plt.close()
-                posterior = sample[:,parameters.index('$post$')]
+                # Burn-in cut
+                # Find the first index where the weight is larger than 1e-6
+                ind_burnin = np.argmax(weigths>1e-6)
+                print(f'>> Burn-in cut at index {ind_burnin}')
+                if show_auxplots == True:
+                    # Plot the weights
+                    plt.plot(np.arange(len(weigths)),weigths, color='k')
+                    # Plot a dashed vertical line at that index
+                    plt.axvline(x=ind_burnin,linestyle='--',color='r')
+                    plt.show()
+                    plt.close()
+                # Apply burn-in cut
+                print(f'>> Chain size before burn-in cut: {sample.shape}')
+                sample = sample[ind_burnin:,:]
+                print(f'>> Chain size after burn-in cut: {sample.shape}')
+                # Extract the posterior
+                posterior = sample[:,parameters.index('$post$')] 
+                weigths = sample[:,parameters.index('$weight$')]
                 # Sampling Om_c*h^2 and Om_b*h^2
                 sample,parameters=omega_m(sample=sample,parameters=parameters)
                 # Computing S_8
-                sample,parameters=S8(sample=sample,parameters=parameters,alpha=0.5)
+                sample,parameters=S8(sample=sample,parameters=parameters,alpha=S8_alpha)              
+                # S8_txpipe = sample[:,parameters.index('$S_8$')]  
 
-            fig, axs = plt.subplots(nrows=1, ncols=6, figsize=(18, 3))
+            if show_auxplots == True:
+                # Histograms
+                params_to_plot = np.array([])
+                for par in parameters:
+                    if par in ['$\Omega_{cdm} \cdot h^2$','$\Omega_{cdm}','$\Omega_b \cdot h^2$','$\Omega_b$', \
+                            '$\Omega_m$','$\ln(10^{9} A_s)$','$\ln(10^{10} A_s)$','$\sigma_8$','$S_8$']:
+                        params_to_plot = np.append(params_to_plot,par)
+                fig, axs = plt.subplots(nrows=1, ncols=int(len(params_to_plot)), figsize=(9, 1.5))
 
-            if '$\Omega_{cdm} \cdot h^2$' in parameters:
-                axs[0].hist(sample[:,parameters.index('$\Omega_{cdm} \cdot h^2$')],histtype='step')
-                axs[0].set_title('$\Omega_{cdm} \cdot h^2$')
-            elif '$\Omega_{cdm}$' in parameters:
-                axs[0].hist(sample[:,parameters.index('$\Omega_{cdm}$')],histtype='step')
-                axs[0].set_title('$\Omega_{cdm}$')
+                for ind, par in enumerate(params_to_plot):
+                    axs[ind].hist(sample[:,parameters.index(par)],density=True,histtype='step')
+                    axs[ind].set_title(par)
 
-            if '$\Omega_b \cdot h^2$' in parameters:
-                axs[1].hist(sample[:,parameters.index('$\Omega_b \cdot h^2$')],histtype='step')
-                axs[1].set_title('$\Omega_b \cdot h^2$')
-            elif '$\Omega_b$' in parameters:
-                axs[1].hist(sample[:,parameters.index('$\Omega_b$')],histtype='step')
-                axs[1].set_title('$\Omega_b$')
-
-            axs[2].hist(sample[:,parameters.index('$\Omega_m$')],histtype='step')
-            axs[2].set_title('$\Omega_m$')
-
-            axs[3].hist(sample[:,parameters.index('$\sigma_8$')],histtype='step')
-            axs[3].set_title('$\sigma_8$')
-
-            axs[4].hist(sample[:,parameters.index('$S_8$')],histtype='step')
-            axs[4].set_title('$S_8$')
-
-            if '$\ln(10^{10} A_s)$' in parameters:
-                axs[5].hist(sample[:,parameters.index('$\ln(10^{10} A_s)$')],histtype='step')
-                axs[5].set_title('$\ln(10^{10} A_s)$')
-            elif '$\ln(10^{9} A_s)$' in parameters:
-                axs[5].hist(sample[:,parameters.index('$\ln(10^{9} A_s)$')],histtype='step')
-                axs[5].set_title('$\ln(10^{9} A_s)$')
-
-            plt.show()
-            plt.close()
+                plt.show()
+                plt.close()
 
             # Add to already initialize chain
             c.add_chain(sample,
@@ -915,11 +874,27 @@ def report_best_fit(filename,labeltxt,paramslist,path_save='/pscratch/sd/d/david
 ##########################
 ### Plotting functions ###
 ##########################
-def plot_Omegam_sigma8_S8(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
+def plot_S8(chain,labelpng,S8_alpha,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
+    fig = chain.plotter.plot_distributions(parameters=['$S_8$'], 
+                             extents=extents_dict,
+                             figsize=(3,3))
+    # Add text in the top right corner showing the alpha value in relative position 
+    # to the current axis
+    fig.text(0.2, 0.8, r'$\alpha$ = '+str(np.round(S8_alpha, 2)), fontsize=8)
+    plt.savefig(os.path.join(savepath,f'S8_{labelpng}.png'),
+               dpi=300,
+               bbox_inches='tight')
+    plt.show()
+    plt.close()
+    return(fig)
+
+def plot_Omegam_sigma8_S8(chain,labelpng,S8_alpha,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
     fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$', '$S_8$'], 
                              extents=extents_dict,
                              watermark=r"Preliminary",
-                             figsize=(5,5))
+                             figsize=(3,3))
+    # Add text in the last panel with the S8 alpha value
+    # fig.text(0.2, 0.8, r'$\alpha$ = '+str(np.round(S8_alpha, 2)), fontsize=8)
     plt.savefig(os.path.join(savepath,f'Om_sigma8_S8_{labelpng}.png'),
                dpi=300,
                bbox_inches='tight')
@@ -931,7 +906,7 @@ def plot_Omegam_sigma8_lnAs(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2
     fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$', '$\ln(10^{10} A_s)$'], 
                              extents=extents_dict,
                              watermark=r"Preliminary",
-                             figsize=(5,5))
+                             figsize=(3,3))
     plt.savefig(os.path.join(savepath,f'Om_sigma8_lnAs_{labelpng}.png'),
                dpi=300,
                bbox_inches='tight')
@@ -971,7 +946,7 @@ def plot_Omegam_S8(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HS
     fig = chain.plotter.plot(parameters=['$\Omega_m$', '$S_8$'],
                              extents=extents_dict,
                              watermark="Preliminary",
-                             figsize=(5,5))
+                             figsize=(3,3))
     plt.savefig(os.path.join(savepath,f'Om_S8_{labelpng}.png'),
                dpi=300,
                bbox_inches='tight')
@@ -983,7 +958,7 @@ def plot_cosmological(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC
     fig = chain.plotter.plot(parameters=['$\Omega_m$','$\sigma_8$','$\Omega_b \cdot h^2$','$\Omega_{cdm} \cdot h^2$','$n_{s}$','$h$'],
                              extents=extents_dict,
                              watermark="Preliminary",
-                             figsize=(5,5))
+                             figsize=(3,3))
     plt.savefig(os.path.join(savepath,f'cosmo_{labelpng}.png'),
                dpi=300,
                bbox_inches='tight')
@@ -995,7 +970,7 @@ def plot_cosmological_hamana(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x
     fig = chain.plotter.plot(parameters=['$\Omega_m$','$\sigma_8$','$\ln(10^{9} A_s)$', '$\Omega_b$','$\Omega_{cdm}$','$n_{s}$','$h$'],
                              extents=extents_dict,
                              watermark="Preliminary",
-                             figsize=(5,5))
+                             figsize=(3,3))
     plt.savefig(os.path.join(savepath,f'cosmo_{labelpng}.png'),
                dpi=300,
                bbox_inches='tight')
@@ -1007,7 +982,7 @@ def plot_cosmological_as(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-
     fig = chain.plotter.plot(parameters=['$\Omega_m$','$\ln(10^{10} A_s)$','$\Omega_b \cdot h^2$','$\Omega_{cdm} \cdot h^2$','$n_{s}$','$h$'],
                              extents=extents_dict,
                              watermark="Preliminary",
-                             figsize=(5,5))
+                             figsize=(3,3))
     plt.savefig(os.path.join(savepath,f'cosmo_as_{labelpng}.png'),
                dpi=300,
                bbox_inches='tight')
@@ -1019,7 +994,7 @@ def plot_cosmological_def(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt
     fig = chain.plotter.plot(parameters=['$\Omega_{cdm} \cdot h^2$','$\Omega_b \cdot h^2$','$h$','$n_{s}$','$\ln(10^{10} A_s)$'],
                              extents=extents_dict,
                              watermark="Preliminary",
-                             figsize=(5,5))
+                             figsize=(3,3))
     plt.savefig(os.path.join(savepath,f'cosmo_{labelpng}.png'),
                dpi=300,
                bbox_inches='tight')
@@ -1102,7 +1077,7 @@ def plot_intrinsic_alignments(chain,labelpng,mode="lin",savepath='/pscratch/sd/d
         fig = chain.plotter.plot(parameters=['$A_{IA}$','$\eta$'],
                                  extents=extents_dict,
                                  watermark="Preliminary",
-                                 figsize=(5,5))
+                                 figsize=(3,3))
         plt.savefig(os.path.join(savepath,f'nla-ia_{labelpng}.png'),
                    dpi=300,
                    bbox_inches='tight')
@@ -1110,7 +1085,7 @@ def plot_intrinsic_alignments(chain,labelpng,mode="lin",savepath='/pscratch/sd/d
         fig = chain.plotter.plot(parameters=['$A_{IA,lin}$','$\\alpha_z$'],
                                  extents=extents_dict,
                                  watermark="Preliminary",
-                                 figsize=(5,5))
+                                 figsize=(3,3))
         plt.savefig(os.path.join(savepath,f'lin-ia_{labelpng}.png'),
                    dpi=300,
                    bbox_inches='tight')
