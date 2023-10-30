@@ -1,3 +1,4 @@
+from wsgiref.util import shift_path_info
 import sacc
 import numpy as np
 import matplotlib.pyplot as plt
@@ -800,10 +801,10 @@ def ApplyHamanaShearCuts(sacc_list):
             continue
     return(s)
     
-def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, shear_cuts=True):
+def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_save, label, shear_cuts=True):
     # combmethod = 'ivw' or 'aw'
     print('<< Combined TXPipe data vector generation >>')
-    path_to_save = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw'
+    # path_to_save = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw'
     # Initialize empty sacc file
     s = sacc.Sacc()
     # Hard-wired numbers, HSC specific
@@ -853,8 +854,8 @@ def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, shear_cuts=
     if shear_cuts:
         print('>> Applying Hikage et al. shear cuts (300 < ell < 1900)')
         # Add to individual field sacc, IVW and AW measurements
-        sacc_list = np.append(sacc_list, os.path.join(path_to_save, 'summary_statistics_fourier_ivw.sacc'))
-        sacc_list = np.append(sacc_list, os.path.join(path_to_save, 'summary_statistics_fourier_aw.sacc'))
+        sacc_list = np.append(sacc_list, os.path.join(path_to_save, f'summary_statistics_fourier_ivw_{label}.sacc'))
+        sacc_list = np.append(sacc_list, os.path.join(path_to_save, f'summary_statistics_fourier_aw_{label}.sacc'))
         # Application
         ApplyHikageShearCuts(sacc_list = sacc_list)
     return(s)
@@ -1353,34 +1354,52 @@ def Shear2pt_plot_Hamana_real(save_fig=False):
                     dpi=300,
                     bbox_inches='tight')
     return()
-def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_literature=False,save_fig=False):
+def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_literature=False,show_residual=False,save_fig=False):
     # fname list of sacc data vectors
     # labels list of labels for the dvs
     # add_literature Add Hikage et al. and Nicola et al. measurements
     nbins_lens = 4
     # generate the subplot structure
-    fig, axs = plt.subplots(1, nbins_lens, sharex=True, sharey='row', figsize=(10,4))
-    fig.tight_layout()
+    if show_residual == True:
+        # Initialize figure to make the residual plot, the second raw must be the same width as the first one
+        # but one third of the height
+        fig, axs = plt.subplots(2, nbins_lens, sharex=True, sharey='row', figsize=(10,4), gridspec_kw={'height_ratios': [3, 1]})
+    else:
+        fig, axs = plt.subplots(1, nbins_lens, sharex=True, sharey='row', figsize=(10,4))
+    # fig.tight_layout()
 
-    plt.subplots_adjust(wspace=0, hspace=0)
+    plt.subplots_adjust(wspace=0.02, hspace=0.02)
     # Initialize figure and format
     #loop over redshift bins
     for i in np.arange(nbins_lens):
         for j in np.arange(nbins_lens):
             if i == j:
+                if show_residual == True:
+                    ind_plot = (0,i)
+                    ind_res =  (1,i)
+                else:
+                    ind_plot = i
                 # log-log scale
-                axs[i].set_xscale('log')
-                axs[i].axhline(0, ls='--', c='k', linewidth=0.5)
+                axs[ind_plot].set_xscale('log')
+                axs[ind_plot].axhline(0, ls='--', c='k', linewidth=0.5)
                 # x-lim range
-                axs[i].set_xlim([90, 5500])
-                axs[i].set_box_aspect(1)
+                axs[ind_plot].set_xlim([90, 5500])
+                axs[ind_plot].set_box_aspect(1)
 
                 # z-bin pair
-                axs[i].text(0.15, 0.85,f'({i + 1},{j + 1})', ha='center', va='center', transform=axs[i].transAxes, fontsize=12)
+                axs[ind_plot].text(0.15, 0.85,f'({i + 1},{j + 1})', ha='center', va='center', transform=axs[ind_plot].transAxes, fontsize=12)
                 if i == 0:
-                    axs[i].set_ylabel('$\mathcal{D}^{\delta \delta}_\ell [\\times 10]$')
-                axs[i].set_xlabel('multipole, $\ell$')
-                axs[i].set_xticks((100,1000),labels=('100','1000'))
+                    axs[ind_plot].set_ylabel('$\mathcal{D}^{\delta \delta}_\ell [\\times 10]$')
+                if show_residual == True:
+                    axs[ind_res].set_xlabel('multipole, $\ell$')
+                    if i == 0:
+                        axs[ind_res].set_ylabel('$\Delta C^{\delta \delta}_\ell / \sigma$')
+                    axs[ind_res].set_xticks((100,1000),labels=('100','1000'))
+                    axs[ind_res].set_ylim([-10,10])
+                    axs[ind_res].axhline(0, ls='--', c='k', linewidth=0.5)
+                else:
+                    axs[ind_plot].set_xlabel('multipole, $\ell$')
+                    axs[ind_plot].set_xticks((100,1000),labels=('100','1000'))
     if add_individual == True:
         ##############################
         ###   Fields measurements  ###
@@ -1388,21 +1407,34 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
         k = 1
         # loop over the 6 different fields
         for fn, lab in zip(fname,labels):
+            print('>> Plotting ', lab)
             # read Sacc file
             s = sacc.Sacc.load_fits(fn)
             #loop over redshift bins
             for i in np.arange(nbins_lens):
                 for j in np.arange(nbins_lens):
                     if i == j:
+                        if show_residual == True:
+                            ind_plot = (0,i)
+                            ind_res =  (1,i)
+                        else:
+                            ind_plot = i
                         # read cosmic shear data points
                         if 'summary' in fn:
-                            print('DV with covariance')
+                            if i == 0:
+                                print('DV with covariance')
                             ell, Cell, cov = s.get_ell_cl("galaxy_density_cl", f'lens_{i}', f'lens_{j}', return_cov=True)
                         elif 'twopoint' in fn:
-                            print('DV w/o covariance')
+                            if i == 0:
+                                print('DV w/o covariance')
                             ell, Cell = s.get_ell_cl("galaxy_density_cl", f'lens_{i}', f'lens_{j}', return_cov=False)
                         noise = s.get_tag("n_ell", data_type="galaxy_density_cl", tracers=(f"lens_{i}",f"lens_{j}"))
-                        Cell = Cell - noise
+                        if noise is not None:
+                            # Substract noise
+                            print('Substracting noise')
+                            Cell = Cell - noise
+                        else:
+                            print('No noise to substract')
                         # computing prefactor 
                         pref = ell * (ell + 1) / (2 * np.pi)
                         Dell = pref * Cell * 10
@@ -1412,7 +1444,7 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
                             err = np.sqrt(np.diag(cov))
                             err = pref * err * 10
                             # plot
-                            axs[i].errorbar(ell, Dell, err, 
+                            axs[ind_plot].errorbar(ell, Dell, err, 
                                             color=colors[k], 
                                             fmt='o', 
                                             markersize=3.0, 
@@ -1420,11 +1452,32 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
                                             alpha=0.3,
                                             label=f'{lab.upper()}')
                         elif 'twopoint' in fn:
-                            axs[i].scatter(ell, Dell,
+                            axs[ind_plot].scatter(ell, Dell,
                                            color=colors[k+1],
                                            s=2.5,
                                            alpha=1.0,
                                            label=f'{lab.upper()}')
+                        # Show residuals
+                        if show_residual == True:
+                            # Extract Nicola et al. Cell and error for this correlation
+                            ell_an, Cell_an, err_an = NicolaClustering_Cells(i)
+                            # Check if Cell, Cell_an and err_an are the same length if not add zeros at the end of the shorter array
+                            if len(ell) != len(ell_an):
+                                if len(ell) > len(ell_an):
+                                    ell_an = np.append(ell_an, np.zeros(len(ell) - len(ell_an)))
+                                    Cell_an = np.append(Cell_an, np.zeros(len(ell) - len(Cell_an)))
+                                    err_an = np.append(err_an, np.zeros(len(ell) - len(err_an)))
+                                elif len(ell) < len(ell_an):
+                                    ell = np.append(ell, np.zeros(len(ell_an) - len(ell)))
+                                    Cell = np.append(Cell, np.zeros(len(ell_an) - len(Cell)))
+                                    err = np.append(err, np.zeros(len(ell_an) - len(err)))
+                            # Compute residuals wrt to Nicola et al.
+                            res = (Cell - Cell_an) / err_an
+                            axs[ind_res].scatter(ell, res,
+                                                color=colors[k],
+                                                # Scatter are crosses
+                                                marker='x',
+                                                s=2.7)
             # new color for the next field
             k += 1
     if add_combined is not None:
@@ -1433,6 +1486,11 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
             for i in np.arange(nbins_lens):
                 for j in np.arange(nbins_lens):
                     if i == j:
+                        if show_residual == True:
+                            ind_plot = (0,i)
+                            ind_res =  (1,i)
+                        else:
+                            ind_plot = i
                         # Read IVW combined measurement (This work)
                         ell_txp, Cell_txp, err_txp, cov_txo = Read_TXPipe_CombMeas_Cells(probe='galaxy_density_cl',i=i,j=j, combmethod='aw')
                         # computing prefactor 
@@ -1442,17 +1500,22 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
                         err_txp = pref * err_txp * 10 
 
                         # plot
-                        axs[i].errorbar(ell_txp, Dell_txp, err_txp, 
-                                        color='orange', 
-                                        fmt='o', 
-                                        markersize=3.0, 
-                                        capsize=2,
-                                        label='This work (AW)')
+                        axs[ind_plot].errorbar(ell_txp, Dell_txp, err_txp, 
+                                                color='orange', 
+                                                fmt='o', 
+                                                markersize=3.0, 
+                                                capsize=2,
+                                                label='This work (AW)')
         elif add_combined == 'ivw':
             #loop over redshift bins
             for i in np.arange(nbins_lens):
                 for j in np.arange(nbins_lens):
                     if i == j:
+                        if show_residual == True:
+                            ind_plot = (0,i)
+                            ind_res =  (1,i)
+                        else:
+                            ind_plot = i
                         # Read IVW combined measurement (This work)
                         ell_txp, Cell_txp, err_txp, cov_txp = Read_TXPipe_CombMeas_Cells(probe='galaxy_density_cl',i=i,j=j, combmethod='ivw')
                         # computing prefactor 
@@ -1462,7 +1525,7 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
                         err_txp = pref * err_txp * 10 
 
                         # plot
-                        axs[i].errorbar(ell_txp, Dell_txp, err_txp, 
+                        axs[ind_plot].errorbar(ell_txp, Dell_txp, err_txp, 
                                         color=colors[0], 
                                         fmt='o', 
                                         markersize=3.0, 
@@ -1473,22 +1536,30 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
                         axs[i].text(0.85, 0.1,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[i].transAxes, fontsize=6)
     if add_literature == True:
         for i in np.arange(nbins_lens):
+            if show_residual == True:
+                ind_plot = (0,i)
+                ind_res =  (1,i)
+            else:
+                ind_plot = i
             ell_an, Cell_an, err = NicolaClustering_Cells(i)
             pref = ell_an * (ell_an + 1) / (2 * np.pi)
             Dell_an = pref * Cell_an * 10
             err_an = pref * err * 10
 
             # plot
-            axs[i].errorbar(ell_an, Dell_an, err_an, 
+            axs[ind_plot].errorbar(ell_an, Dell_an, err_an, 
                             color=colors[1], 
                             fmt='o', 
                             markersize=3.0, 
                             capsize=2,
                             label='Nicola et al.')
-    if add_individual == False:
-        axs[3].legend(frameon=False,fontsize=8)
-    else:
-        plt.legend(bbox_to_anchor=(-0.1, 1.2),ncol = 3, frameon=False,fontsize=12)
+    """ if add_individual == False:
+        if show_residual == True:
+            axs[(0,3)].legend(frameon=False,fontsize=8)
+        else:
+            axs[3].legend(frameon=False,fontsize=8)
+    else: """
+    axs[ind_plot].legend(frameon=False,fontsize=6)
     if save_fig == True:
         plt.savefig('Clustering2pt.png',
             dpi=300,
