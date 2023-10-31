@@ -228,6 +228,10 @@ def NicolaClustering_Cells(i):
                        encoding='latin1')
 
     ell_and = np.array([100,200,300,400,600,800,1000,1400,1800,2200,3000,3800,4600,6200,7800,9400,12600,15800])
+    # Multipole will be the center of the edges defined in ell_and
+    ell_and = ell_and[:-1] + np.diff(ell_and)/2
+    print('Multpoles Andrina', ell_and)
+
     # Andrinas file index coversion
     if i == 0:
         j = 6
@@ -1356,7 +1360,7 @@ def Shear2pt_plot_Hamana_real(save_fig=False):
                     dpi=300,
                     bbox_inches='tight')
     return()
-def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_literature=False,show_residual=False,save_fig=False):
+def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_literature=False,add_byhand=False,show_residual=False,save_fig=False):
     # fname list of sacc data vectors
     # labels list of labels for the dvs
     # add_literature Add Hikage et al. and Nicola et al. measurements
@@ -1555,6 +1559,42 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
                             markersize=3.0, 
                             capsize=2,
                             label='Nicola et al.')
+    if add_byhand == True:
+        # Javi clustering measurement by hand
+        fname = '/global/cfs/projectdirs/lsst/groups/LSS/HSC_reanalysis/data_javi/lens_sample_2023_pdr1/power_spectra_byhand_binarymask.fits.gz'
+        # Read fits file
+        import astropy.io.fits as fits
+        # import matplotlib.pyplot as plt
+        # import numpy as np
+
+        # Read fits file
+        hdul = fits.open(fname)
+        data = hdul[1].data
+
+        # Initialize figure with one row and four columns
+        # fig, ax = plt.subplots(1, 4, sharey=True, figsize=(20, 5))
+
+        ell = data['ell']
+        prefactor = ell * (ell + 1) / (2 * np.pi) * 10
+
+        for i in np.arange(4):
+            # Extract the power spectrum for each bin
+            cell = data[f'cl_{i}']
+            # Extract the noise power spectrum for each bin
+            nell = data[f'nl_{i}']
+            # Substract the noise
+            cell = cell - nell
+            # compute Dell
+            dell = cell * prefactor
+            # Scatter plot Dell with crosses 
+            axs[i].scatter(ell, dell, s=2, marker='x', color='k', label='Javi')
+            
+            # if i == 0:
+            #     ax[i].set_ylabel(r'$D_\ell [\times 10]$', fontsize=20)
+            
+            # ax[i].set_xlabel(r'$\ell$', fontsize=20)
+            # ax[i].set_xscale('log')
+    # Add text with the (i,i) bin
     """ if add_individual == False:
         if show_residual == True:
             axs[(0,3)].legend(frameon=False,fontsize=8)
