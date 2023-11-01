@@ -173,6 +173,8 @@ def RedshiftDistr_plot(sacc, savepath = None):
     ax2.text(0.7, 0.7, 'Lenses',transform=ax2.transAxes,fontsize=12)
     ax2.set_xlabel('redshift')
     if savepath is not None:
+        print(">> Saving figure...")
+        print(os.path.join(savepath, 'dndz.pdf'))
         plt.savefig(os.path.join(savepath, 'dndz.png'),
                      dpi=300,
                      bbox_inches='tight')
@@ -595,7 +597,7 @@ def Generate_Hikage_Shear_Cells():
     # - Dells covariance
     # Outputs:
     # - Cells data vector
-    print('<< Generating Hikage et al. cosmic shear data vector in Sacc format>>')
+    print('<< Generating Hikage et al. cosmic shear data vector in Sacc format >>')
     # path_to_save = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw'
     path_to_save = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/hikage/sacc/'
     # Initialize empty sacc file
@@ -1347,6 +1349,7 @@ def Shear2pt_plot_Hamana_real(save_fig=False):
             
     axs_xip[0,3].legend(frameon=False,fontsize=7)
     if save_fig == True:
+        print(">> Saving figure ...")
         fig_xip.savefig(f'Shear2pt_Xip_corrfunc_Hamana.png',
                     dpi=300,
                     bbox_inches='tight')
@@ -1603,6 +1606,7 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
     else: """
     axs[ind_plot].legend(frameon=False,fontsize=6)
     if save_fig == True:
+        print(">> Saving figure ...")
         plt.savefig('Clustering2pt.png',
             dpi=300,
             bbox_inches='tight')
@@ -1729,6 +1733,7 @@ def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_
 
     plt.legend(bbox_to_anchor=(1, 4.25),frameon=False,fontsize=12,ncol=6)
     if save_fig == True:
+        print('>> Saving figure ...')
         plt.savefig('Gammat2pt.png',
             dpi=300,
             bbox_inches='tight')
