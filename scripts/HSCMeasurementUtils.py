@@ -1542,7 +1542,33 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
                                         label='This work')
                         snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                         # z-bin pair
-                        axs[i].text(0.85, 0.1,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[i].transAxes, fontsize=6)
+                        axs[ind_plot].text(0.85, 0.1,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[ind_plot].transAxes, fontsize=6)
+                        # Show residuals
+                        if show_residual == True:
+                            print('>> Computing residuals')
+                            # Extract Nicola et al. Cell and error for this correlation
+                            ell_an, Cell_an, err_an = NicolaClustering_Cells(i)
+                            # Check if Cell, Cell_an and err_an are the same length if not add zeros at the end of the shorter array
+                            if len(ell_txp) != len(ell_an):
+                                if len(ell_txp) > len(ell_an):
+                                    ell_an = np.append(ell_an, np.zeros(len(ell_txp) - len(ell_an)))
+                                    Cell_an = np.append(Cell_an, np.zeros(len(ell_txp) - len(Cell_an)))
+                                    err_an = np.append(err_an, np.zeros(len(ell_txp) - len(err_an)))
+                                elif len(ell_txp) < len(ell_an):
+                                    ell_txp = np.append(ell_txp, np.zeros(len(ell_an) - len(ell_txp)))
+                                    Cell_txp = np.append(Cell_txp, np.zeros(len(ell_an) - len(Cell_txp)))
+                                    err_txp = np.append(err_txp, np.zeros(len(ell_an) - len(err_txp)))
+                            # Compute residuals wrt to Nicola et al.
+                            res = (Cell_txp - Cell_an) / err_an
+                            axs[ind_res].scatter(ell_txp, res,
+                                                color=colors[0],
+                                                # Scatter are crosses
+                                                marker='x',
+                                                s=2.7)
+                            # Set a grey band showing the 1-sigma region
+                            axs[ind_res].axhspan(-1, 1, alpha=0.1, color='k')
+                            # Set y-lims between -5 and 5 sigma
+                            axs[ind_res].set_ylim([-3, 3])
     if add_literature == True:
         for i in np.arange(nbins_lens):
             if show_residual == True:
