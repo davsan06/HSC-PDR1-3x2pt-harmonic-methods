@@ -2,6 +2,9 @@
 
 ## Data
 
+### Catalogs
+Source and lens catalogs live in NERSC. We consider 5 different patches of the sky: GAMA09H, GAMA15H, VVDS, WIDE12H and XMM. Individual field catalogs can be found under `/global/cfs/projectdirs/lsst/groups/LSS/HSC_reanalysis/data_javi/2023_reanalysis`, lens catalogs are named `photometry_lenscatalog_hsc_{FIELD}_nonmetacal_pdr1.h5` and source catalogs are `shear_sourcecatalog_hsc_{FIELDS}_nonmetacal_05_22.h5`. Stacked catalogs with all the info from the different regions of the sky can also be found with the names `photometry_lenscatalog_hsc_ALL_nonmetacal_pdr1_11_06.h5` and `shear_sourcecatalog_hsc_ALL_nonmetacal_11_06.h5`
+
 ### Harmonic space
 * TXPipe (This work)
 
