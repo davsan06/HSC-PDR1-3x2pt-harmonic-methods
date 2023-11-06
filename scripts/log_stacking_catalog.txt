@@ -1,0 +1,52 @@
+###############################
+###   HSC SOURCE CATALOGS   ###
+###############################
+>> Stacking SOURCE catalogs for field: GAMA09H
+>> Keys of the catalog are the same as in the first catalog
+(2811339, 26)
+(2811339, 26)
+>> Stacking SOURCE catalogs for field: GAMA15H
+>> Keys of the catalog are the same as in the first catalog
+(2766346, 26)
+(5577685, 26)
+>> Stacking SOURCE catalogs for field: VVDS
+>> Keys of the catalog are the same as in the first catalog
+(1722524, 26)
+(7300209, 26)
+>> Stacking SOURCE catalogs for field: WIDE12H
+>> Keys of the catalog are the same as in the first catalog
+(1192946, 26)
+(8493155, 26)
+>> Stacking SOURCE catalogs for field: XMM
+>> Keys of the catalog are the same as in the first catalog
+(2475423, 26)
+(10968578, 26)
+>> Saving stacked catalog...
+shear_sourcecatalog_hsc_ALL_nonmetacal_11_06.h5
+>> Done!
+#############################
+###   HSC LENS CATALOGS   ###
+#############################
+>> Stacking LENS catalogs for field: GAMA09H
+>> Keys of the catalog are the same as in the first catalog
+(1786082, 26)
+(1786082, 26)
+>> Stacking LENS catalogs for field: GAMA15H
+>> Keys of the catalog are the same as in the first catalog
+(1795063, 26)
+(3581145, 26)
+>> Stacking LENS catalogs for field: VVDS
+>> Keys of the catalog are the same as in the first catalog
+(2632450, 26)
+(6213595, 26)
+>> Stacking LENS catalogs for field: WIDE12H
+>> Keys of the catalog are the same as in the first catalog
+(1301180, 26)
+(7514775, 26)
+>> Stacking LENS catalogs for field: XMM
+>> Keys of the catalog are the same as in the first catalog
+(2317356, 26)
+(9832131, 26)
+>> Saving stacked catalog...
+photometry_lenscatalog_hsc_ALL_nonmetacal_pdr1_11_06.h5
+>> Done!
