@@ -869,10 +869,23 @@ def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_sav
     return(s)
 
 def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
-    # shear 'galaxy_shear_cl_ee'
+    ####################################################################
+    # Funtion to read TXPipe 3x2pt measurements for plotting
+    # Inputs:
+    #  - probe: shear > 'galaxy_shear_cl_ee'
+    #           clustering > 'galaxy_density_cl'
+    #           gglensing > 'galaxy_shearDensity_cl_e'
+    #  - combmethod: 'ivw', 'all'
+    #  - lens_sample: 'dr1' and 's16a'
+    # Outputs:
+    #  - ell: Multipoles
+    #  - Cell: angular power spectra signal
+    #  - err: error
+    #  - cov: covariance matrix for the given probe and (i,j) correlation
+    #####################################################################
     # Read our IVW combined measuremtent
     if 'ivw' in combmethod:
-        print('>> Reading IVW combined measurements')
+        print('>> Reading Inverse Variance Weighting combined measurements')
         if lens_sample == 's16a':
             print('>> Reading S16A lens sample')
             fname = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw/summary_statistics_fourier_ivw.sacc'
@@ -880,7 +893,11 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
             print('>> Reading DR1 lens sample')
             fname = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/combined/summary_statistics_fourier_ivw.sacc'
     elif combmethod == 'aw':
+        print('>> Reading Area-Weighted combined measurements')
         fname = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw/summary_statistics_fourier_aw.sacc'
+    elif combmethod == 'all':
+        print('>> Reading ALL-FIELDS measurement')
+        fname = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/outputs_all/summary_statistics_fourier.sacc'
     else:
         print('Combination method does not exist!')
     # Read sacc
@@ -900,12 +917,21 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
 ###  Plotting 2pt functions  ###
 ################################
 
-def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_literature=False, add_Hikage_sacc=False, \
+def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_allfields=False, add_literature=False, add_Hikage_sacc=False, \
                    theory_fname=None, just_auto = False, save_fig=False, savepath='/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/measurements/cosmicshear'):
-    # fname list of sacc data vectors
-    # labels list of labels for the dvs
-    # add_literature Add Hikage et al. and Nicola et al. measurements
-    # save_fig
+    ####################################################################
+    # Inputs:
+    # - fname: list of sacc files to read
+    # - labels: list of labels for the legend
+    # - add_individual: add individual fields measurements
+    # - add_combined: add combined measurements or all-fields
+    # - add_literature: add literature measurements
+    # - add_Hikage_sacc: add Hikage et al. measurements
+    # - theory_fname: file with theory prediction
+    # - just_auto: plot only auto-correlations
+    # - save_fig: save figure
+    # - savepath: path to save figure
+    ####################################################################
         
     nbins_src = 4
     # generate the subplot structure
@@ -1050,8 +1076,9 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_lit
                     err = err_hik[:,hik_ind] * 10**4
                     # print('Error Hikage')
                     axs[axind].errorbar(ell_hik, Dell, yerr=err, 
-                                        c=colors[7],
-                                        fmt='o', 
+                                        c='green',
+                                        fmt='o',
+                                        mfc='w', 
                                         markersize=3.0, 
                                         capsize=2,
                                         label='Hikage et al.')
@@ -1072,8 +1099,9 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_lit
                     # A. Nicola et al. Cosmic shear with HSC (Gaussian cov.)
                     ell_and, Dell_and, err_and = NicolaShear_Dells(i,j)
                     axs[axind].errorbar(ell_and, Dell_and, yerr=err_and, 
-                                          c=colors[8],
+                                          c='red',
                                           fmt='o', 
+                                          mfc='w',
                                           markersize=3.0, 
                                           capsize=2,
                                           label='Nicola et al.')
@@ -1169,13 +1197,47 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_lit
                         axs[axind].errorbar(ell_txp, Dell_txp, err_txp, 
                                           color=colors[0], 
                                           fmt='o', 
+                                          mfc='w',  
                                           markersize=3.0, 
                                           capsize=2,
-                                          label='This work')
+                                          label='This work (IVW)')
                         
                         snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                         # z-bin pair
                         axs[axind].text(0.15, 0.10,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[axind].transAxes, fontsize=6)
+    if add_allfields == True:
+        textfig += '_AllFields'
+        for i in np.arange(nbins_src):
+            for j in np.arange(nbins_src):
+                if i >= j:
+                    axind = (i,j)
+                    if just_auto:
+                        if i == j:
+                            axind = i
+                            pass
+                        else:
+                            continue
+                    ##################################
+                    ### Inverse Variance Weighting ###
+                    ##################################
+                    # Read IVW combined measurement (This work)
+                    ell_txp, Cell_txp, err_txp, cov_txp = Read_TXPipe_CombMeas_Cells(probe='galaxy_shear_cl_ee',i=i,j=j,combmethod='all')
+                    # computing prefactor 
+                    pref = ell_txp * (ell_txp + 1) / (2 * np.pi)
+                    # compute Dell = l * (l + 1) * Cell / (2 * pi)
+                    Dell_txp = pref * Cell_txp * 10 ** 4
+                    err_txp = pref * err_txp * 10 ** 4
+                    # plot
+                    axs[axind].errorbar(ell_txp, Dell_txp, err_txp, 
+                                        color='k', 
+                                        fmt='o', 
+                                        markersize=3.0, 
+                                        capsize=2,
+                                        label='This work (All fields)')
+
+                    snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
+                    # z-bin pair
+                    axs[axind].text(0.15, 0.10,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[axind].transAxes, fontsize=6)
     if theory_fname is not None:
         textfig += '_Theory'
         # Adding chisq info
@@ -1373,7 +1435,7 @@ def Shear2pt_plot_Hamana_real(save_fig=False):
                     dpi=300,
                     bbox_inches='tight')
     return()
-def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_literature=False,  
+def Clustering2pt_plot(fname,labels,add_individual=False,add_allfields=False,add_combined=False,add_literature=False,  
                        add_byhand=False,show_residual=False,save_fig=False, 
                        savepath='/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/measurements/clustering'):
     #########################################################################################
@@ -1600,8 +1662,9 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
 
                         # plot
                         axs[ind_plot].errorbar(ell_txp, Dell_txp, err_txp, 
-                                        color=colors[0], 
+                                        color='k', 
                                         fmt='o', 
+                                        mfc='w',
                                         markersize=3.0, 
                                         capsize=2,
                                         label=label_comb)
@@ -1634,6 +1697,39 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
                             axs[ind_res].axhspan(-1, 1, alpha=0.1, color='k')
                             # Set y-lims between -5 and 5 sigma
                             axs[ind_res].set_ylim([-3, 3])
+    if add_allfields == True:
+        textfig += '_AllFields'
+        #loop over redshift bins
+        for i in np.arange(nbins_lens):
+            for j in np.arange(nbins_lens):
+                if i == j:
+                    if show_residual == True:
+                        ind_plot = (0,i)
+                        ind_res =  (1,i)
+                    else:
+                        ind_plot = i
+                    # Read the Cells computed considering DR1 lens sample
+                    ell_txp, Cell_txp, err_txp, cov_txp = Read_TXPipe_CombMeas_Cells(probe='galaxy_density_cl',
+                                                                                     i=i,j=j,
+                                                                                     combmethod='all',
+                                                                                     lens_sample='dr1')
+                    label_comb = 'This work (All fields)'
+                    # computing prefactor 
+                    pref = ell_txp * (ell_txp + 1) / (2 * np.pi)
+                    # compute Dell = l * (l + 1) * Cell / (2 * pi)
+                    Dell_txp = pref * Cell_txp * 10
+                    err_txp = pref * err_txp * 10 
+
+                    # plot
+                    axs[ind_plot].errorbar(ell_txp, Dell_txp, err_txp, 
+                                    color='k', 
+                                    fmt='o', 
+                                    markersize=3.0, 
+                                    capsize=2,
+                                    label=label_comb)
+                    snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
+                    # z-bin pair
+                    axs[ind_plot].text(0.85, 0.05,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[ind_plot].transAxes, fontsize=6)            
     if add_literature == True:
         textfig += '_Literature'
         for i in np.arange(nbins_lens):
@@ -1701,6 +1797,8 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_combined=False,add_
     if show_residual == True:
         textfig += '_Residuals'
         axs[(0,3)].legend(bbox_to_anchor=(0.0, 1.3),ncol=4,frameon=False,fontsize=10)
+    else:
+        axs[3].legend(bbox_to_anchor=(0.0, 1.3),ncol=4,frameon=False,fontsize=10)
     if save_fig == True:
         print(">> Saving figure ...")
         print(" Path: ", savepath)
