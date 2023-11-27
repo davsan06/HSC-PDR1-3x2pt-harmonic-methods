@@ -905,6 +905,10 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
     # Extract Cls
     if probe == 'galaxy_shear_cl_ee':
         ell, Cell, cov = s.get_ell_cl(probe, f'source_{i}', f'source_{j}', return_cov=True)
+        if combmethod == 'all':
+            # Removing noise
+            nell = s.get_tag('n_ell', 'galaxy_shear_cl_ee', (f'source_{i}',f'source_{j}'))
+            Cell = Cell - nell
     elif probe == 'galaxy_density_cl':
         ell, Cell, cov = s.get_ell_cl(probe, f'lens_{i}', f'lens_{j}', return_cov=True)
     elif probe == 'galaxy_shearDensity_cl_e':
