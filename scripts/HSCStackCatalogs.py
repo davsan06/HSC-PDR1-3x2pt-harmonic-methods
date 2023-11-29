@@ -28,7 +28,7 @@ if os.path.isfile(os.path.join(path,fname_source)):
     f.close() """
 
 # Source catalogs
-list_fields = ['GAMA09H', 'GAMA15H', 'VVDS', 'WIDE12H', 'XMM']
+list_fields = ['GAMA09H'] # , 'GAMA15H', 'VVDS', 'WIDE12H', 'XMM']
 
 ###############################
 ###   HSC SOURCE CATALOGS   ###
@@ -85,6 +85,9 @@ for field in list_fields:
         f_new = h5py.File(fname_new, 'w')
         # Create the group 'shear'
         g = f_new.create_group('shear')
+        # Inserting HSC catalog type metadata
+        metadata = {'catalog_type':'hsc'}
+        g.attrs.update(metadata)
         # Create the datasets
         for col in keys:
             g.create_dataset(col, data=data_stack_all[:,keys.index(col)])
@@ -95,7 +98,7 @@ for field in list_fields:
 ###############################
 ###   HSC LENS CATALOGS   ###
 ###############################
-
+""" 
 print('#############################')
 print('###   HSC LENS CATALOGS   ###')
 print('#############################')
@@ -153,6 +156,4 @@ for field in list_fields:
             g.create_dataset(col, data=data_stack_all[:,keys.index(col)])
         # Close the file
         f_new.close()
-        print('>> Done!')
-    
-
+        print('>> Done!')  """
