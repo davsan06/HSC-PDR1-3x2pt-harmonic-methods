@@ -8,6 +8,9 @@ import h5py
 import healpy as hp
 import seaborn as sns
 
+# Define matplolib colors: black, purple, green, red
+colors = ['#000000', '#800080', '#008000', '#ff0000', "#E69F00", "#56B4E9", "#009E73", "#F0E442", '#800080', "#0072B2", "#CC79A7", "#D55E00"]
+
 # Matplotlib style
 plt.rcParams['figure.figsize'] = 8., 6.
 plt.rcParams['figure.dpi'] = 100
@@ -29,25 +32,43 @@ plt.rcParams['xtick.major.pad'] = 6.
 plt.rcParams['xtick.minor.pad'] = 6.
 plt.rcParams['ytick.major.pad'] = 6.
 plt.rcParams['ytick.minor.pad'] = 6.
-plt.rcParams['xtick.major.size'] = 6. # major tick size in points
+plt.rcParams['xtick.major.size'] = 4. # major tick size in points
 plt.rcParams['xtick.minor.size'] = 3. # minor tick size in points
-plt.rcParams['ytick.major.size'] = 6. # major tick size in points
+plt.rcParams['ytick.major.size'] = 4. # major tick size in points
 plt.rcParams['ytick.minor.size'] = 3. # minor tick size in points
+# Thickness of the axes lines
+plt.rcParams['axes.linewidth'] = 1.5
+# Smaller font size for axes ticks labels
+plt.rcParams['xtick.labelsize'] = 13
 # plt.rcParams['text.usetex'] = True
 plt.rcParams['font.family'] =  'serif'
 # plt.rcParams['font.serif'] = 'Computer Modern Roman Bold'
 plt.rcParams['font.size'] = 18  
 
-colors = ["#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", '#800080', "#0072B2", "#CC79A7", "#D55E00"]
-
 ###################################
 ###  TXPipe consistency checks  ###
 ###################################
 
-def IndexToDeclRa(index,nside):
-    theta,phi=hp.pixelfunc.pix2ang(nside,index)
-    return -np.degrees(theta-np.pi/2.),np.degrees(np.pi*2.-phi)
+# Convert Healpix pixel indices to Right Ascension (RA) and Declination (Dec) coordinates.
+import numpy as np
+import healpy as hp
 
+def IndexToDeclRa(index, nside):
+    """
+    Convert the index of a pixel to its corresponding declination and right ascension.
+
+    Parameters:
+        index (int): The index of the pixel.
+        nside (int): The resolution parameter of the HEALPix grid.
+
+    Returns:
+        declination (float): The declination in degrees.
+        right_ascension (float): The right ascension in degrees.
+    """
+    theta, phi = hp.pixelfunc.pix2ang(nside, index)
+    return -np.degrees(theta - np.pi/2.), np.degrees(np.pi * 2. - phi)
+
+# Convert Right Ascension (RA) and Declination (Dec) coordinates to Healpix pixel indices.
 def RaDecToIndex(ra_deg, dec_deg, nside=32):
     """
     Convert Right Ascension (RA) and Declination (Dec) coordinates to Healpix pixel indices.
@@ -65,7 +86,30 @@ def RaDecToIndex(ra_deg, dec_deg, nside=32):
 
     return pix_indices
 
-def LensTomoCat_plot(fname,title):
+def LensTomoCat_plot(fname, title):
+    """
+    Plot the lens counts histogram based on the given file.
+
+    Parameters:
+    fname (str): The file path of the data file.
+    title (str): The title of the plot.
+
+    Returns:
+    None
+    """
+    
+    # Rest of the code...
+def LensTomoCat_plot(fname):
+    """
+    Plots a histogram of lens counts in different redshift bins.
+
+    Parameters:
+    fname (str): The file path of the HDF5 file containing the lens tomography catalog.
+
+    Returns:
+    None
+    """
+    
     # Read table
     table = h5py.File(fname)
     # Extract info
@@ -85,7 +129,18 @@ def LensTomoCat_plot(fname,title):
     plt.legend(frameon=False)
     return()
 
+
 def LensMaps_plot(fname,title):
+    """
+    Plots the lens counts maps.
+
+    Parameters:
+    fname (str): The file path of the HDF5 file containing the lens tomography catalog.
+    title (str): The title of the plot.
+
+    Returns:
+    None
+    """
     table = h5py.File(fname)
 
     fig, axes = plt.subplots(1,4,figsize=(18,3))
@@ -117,12 +172,23 @@ def LensMaps_plot(fname,title):
     cbar_w.set_label('weighted lens counts')
     return()
 
-def Mask_plot(fname,title):
+def Mask_plot(fname,title,nside=2048):
+    """
+    Plots the mask.
+
+    Parameters:
+    fname (str): The file path of the HDF5 file containing the mask.
+    title (str): The title of the plot.
+    nside (int): The resolution parameter of the HEALPix grid.
+
+    Returns:
+    None
+    """
     table = h5py.File(fname)
     mask = table['maps']['mask']['value']
     pixel = table['maps']['mask']['pixel']
     theta,phi = IndexToDeclRa(pixel,nside)
-    sc_mask = plt.scatter(phi,theta,c=mask,s=1.0)
+    sc_mask = plt.scatter(phi,theta,c=mask,s=0.001)
     plt.title(f'{title} (Mask)')
     plt.xlabel('R.A.')
     plt.ylabel('Dec.')
@@ -131,6 +197,16 @@ def Mask_plot(fname,title):
     return()
 
 def RedshiftDistr_plot(sacc, savepath = None):
+    """
+    Plots the redshift distribution of the sources and lenses.
+
+    Parameters:
+    sacc (sacc.Sacc): The sacc data object.
+    savepath (str): The path to save the figure.
+
+    Returns:
+    None
+    """
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(3*1.5, 4*1.5), sharex=True)
     plt.subplots_adjust(hspace=0)
 
@@ -167,12 +243,14 @@ def RedshiftDistr_plot(sacc, savepath = None):
             ax2.fill_between(z,nz, 0, alpha=0.3, color=colors[i])
     for ax in (ax1, ax2):
         ax.set_xlim([0.0,2.5])
-        ax.set_ylim([0.0,6.7])
-        ax.set_ylabel('n(z)')
+        ax.set_ylabel('p(z)')
     ax2.set_xticks([0.5,1.0,1.5,2.0])
     ax1.text(0.7, 0.7, 'Sources',transform=ax1.transAxes,fontsize=12)
     ax2.text(0.7, 0.7, 'Lenses',transform=ax2.transAxes,fontsize=12)
-    ax2.set_xlabel('redshift')
+    # Remove y ticks from both plots
+    ax1.set_yticks([])
+    ax2.set_yticks([])
+    ax2.set_xlabel('z')
     if savepath is not None:
         print(">> Saving figure...")
         print(os.path.join(savepath, 'dndz.pdf'))
@@ -191,19 +269,39 @@ def RedshiftDistr_plot(sacc, savepath = None):
 ###  Literature comparison  ###
 ###############################
 def HikageShear_Dells():
+    """
+    Reads the HSC data vectors for shear measurements from the specified path.
+    
+    Returns:
+    ell (array): Array of ell values.
+    Dell (array): Array of D_ell values.
+    err (array): Array of error values.
+    """
+    
     path = "/pscratch/sd/d/davidsan/3x2pt-HSC/pipeline_test"
-    # Hikage et al. 
-    # HSC data is presented as D_ell = ell * (ell + 1) /(2 * np.pi) * C_ell
     Dell = np.loadtxt(os.path.join(path, 'hsc_datavectors', 'band_powers.dat'))
     err = np.loadtxt(os.path.join(path, 'hsc_datavectors', 'band_errors.dat'))
     ell = Dell[:,0]
-    return(ell, Dell, err)
+    return ell, Dell, err
 
-def NicolaShear_Dells(i,j):
+def NicolaShear_Dells(i, j):
+    """
+    Calculate the shear power spectrum and its error for two given lens z-bins.
+
+    Parameters:
+    i (int): Index of the first lens z-bin.
+    j (int): Index of the second lens z-bin.
+
+    Returns:
+    tuple: A tuple containing the following elements:
+        - ell (array): Array of multipole values.
+        - Dell (array): Array of shear power spectrum values.
+        - err (array): Array of corresponding errors.
+    """
     path_nicola = '/pscratch/sd/d/davidsan/3x2pt-HSC/pipeline_test/andrina_datavectors'
     # A. Nicola et al. Cosmic shear with HSC (Gaussian cov.)
-    s_and = sacc.Sacc.load_fits(os.path.join(path_nicola,'cls_signal_covG_HSC.fits'))
-    s_and_ng = sacc.Sacc.load_fits(os.path.join(path_nicola,'cls_noise_covNG_HSC.fits'))
+    s_and = sacc.Sacc.load_fits(os.path.join(path_nicola, 'cls_signal_covG_HSC.fits'))
+    s_and_ng = sacc.Sacc.load_fits(os.path.join(path_nicola, 'cls_noise_covNG_HSC.fits'))
     # Signal
     ell, C_ell_and, cov_and = s_and.get_ell_cl('cl_ee', f'wl_{i}', f'wl_{j}', return_cov=True)
     # Noise
@@ -216,9 +314,21 @@ def NicolaShear_Dells(i,j):
     pref = ell * (ell + 1) / (2 * np.pi)
     Dell = C_ell_and * pref * 10**4
     err = err_and * pref * 10**4
-    return(ell, Dell, err)
+    return ell, Dell, err
 
 def NicolaClustering_Cells(i):
+    """
+    Introduce in the clustering signal for galaxies using Nicola et al. method.
+
+    Parameters:
+    i (int): Index parameter to select the appropriate clustering measurement.
+
+    Returns:
+    ell (ndarray): Array of multipole values.
+    Cell (ndarray): Array of clustering signal measurements.
+    err (ndarray): Array of clustering signal errors.
+    """
+    
     if i == 0:
         print('>>  Galaxy clustering - Nicola et al.')
    # Andrina's measurement
@@ -254,7 +364,16 @@ def NicolaClustering_Cells(i):
 ###############################
 ###  Redshift distribution  ###
 ###############################
-def HikageSource_dndz(saccfile):
+def HSCSource_dndz(saccfile):
+    """
+    Add Hamana/Hikage source n(z) to the given saccfile.
+
+    Args:
+        saccfile (Sacc): The saccfile object to which the source n(z) will be added.
+
+    Returns:
+        Sacc: The updated saccfile object with the source n(z) added.
+    """
     print('>>  Source n(z) - Hamana et al.')
     # Hamana/Hikage dndz
     path_dndz = '/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/redshift_distr'
@@ -269,10 +388,58 @@ def HikageSource_dndz(saccfile):
         # plt.plot(z,nz)
     # plt.title('source sample')
     # plt.show()
-    return(saccfile)
+    return saccfile
+
+def HSCLens_dndz(saccfile, pz_method='pz_mc_eab'):
+    """
+    Extracts lens n(z) information from a text file and adds it to a given saccfile.
+
+    N(z) is computed following HSC estimates of the pz:
+    1) Lenses are splitted tomographically by TXPipe
+    2) Sub-samples are stacked to obtain the final n(z) following different methods
+        2.1) Ephor_AB (fiducial)
+        2.2) Frankenz 
+        2.3) NNZ
+    Args:
+        saccfile (sacc.SaccFile): The saccfile to which the lens n(z) information will be added.
+        pz_method (str, optional): The method used to calculate the redshift distribution. 
+            Can be one of 'pz_mc_eab', 'pz_mc_frz', or 'pz_mc_nnz'. Defaults to 'pz_mc_eab'.
+
+    Returns:
+        sacc.SaccFile: The updated saccfile with the lens n(z) information added.
+    """
+    
+    # Extract the nz info
+    print('>> HSC methods: Lens n(z) - This work')
+    path = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/lens_pdr1_redshift_distr'
+    # Method can be: 'pz_mc_eab', 'pz_mc_frz' or 'pz_mc_nnz'
+    fname_red = os.path.join(path, pz_method+'_lens_pdr1_redshift_distr.txt')
+    # Read the text file into dndz
+    dndz = np.loadtxt(fname_red)
+    # Extract the z info from the first column
+    z = dndz[:, 0]
+    # Redshift distribution are the consecutive columns
+    nbins_lens = 4
+    for i in np.arange(nbins_lens):
+        print(f'   Lens bin {i+1}')
+        # Read the dndz for each bin
+        nz = dndz[:, i+1]
+        # Introduce it into our data vector
+        saccfile.add_tracer('NZ', f'lens_{i}', z, nz)
+    return saccfile
 
 def TXPipeLens_dndz(saccfile):
-    print('>> Lens n(z) - This work')
+    """
+    Add lens n(z) to the given saccfile.
+
+    Args:
+        saccfile (sacc.Sacc): The saccfile to which the lens n(z) will be added.
+
+    Returns:
+        sacc.Sacc: The updated saccfile with lens n(z) added.
+    """
+    print('>> TXPipe Lens n(z) - This work')
+    print('   Stacking true redshift distributions')
     # TXPipe lens sample dndz
     path = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/outputs_gama09h/'
     fname = os.path.join(path,'summary_statistics_fourier.sacc')
@@ -288,7 +455,7 @@ def TXPipeLens_dndz(saccfile):
         saccfile.add_tracer('NZ', f'lens_{i}', z, nz)
     # plt.title('lens sample')
     # plt.show()
-    return(saccfile)
+    return saccfile
 
 ###############################
 ###  Combined measurements  ###
@@ -610,7 +777,7 @@ def Generate_Hikage_Shear_Cells():
     #################################
     # Source sample
     # Hamana et al. / Hikage et al.
-    s = HikageSource_dndz(saccfile = s)
+    s = HSCSource_dndz(saccfile = s)
     #################################
     ###   Angular power spectra   ###
     ###       & covariance        ###
@@ -681,7 +848,7 @@ def Generate_Hamana_Shear_CorrFunc():
 
     s = sacc.Sacc()
     # Xip and xim is already in the data vector
-    s = HikageSource_dndz(saccfile = s)
+    s = HSCSource_dndz(saccfile = s)
 
     ###############
     ###   Xim   ###
@@ -751,6 +918,16 @@ def Generate_Hamana_Shear_CorrFunc():
     return(s)
 
 def ApplyHikageShearCuts(sacc_list):
+    """
+    Apply Hikage shear cuts to the given list of sacc files.
+    300 < ell < 1900
+
+    Parameters:
+    sacc_list (list): A list of file paths to sacc files.
+
+    Returns:
+    None
+    """
     # Scale cuts from HSC PDR1 shear analysis
     # Hikage et al. with 300 < ell < 1900
     text_to_add = 'HikageShearSC'
@@ -778,9 +955,19 @@ def ApplyHikageShearCuts(sacc_list):
     return()
 
 def ApplyHamanaShearCuts(sacc_list):
-    # Scale cuts from HSC PDR1 shear in real space analysis
-    # Hamana et al. xip \in 7.08 < theta < 56.2 arcmin
-    #               xim \in 28.2 < theta < 178.8 arcmin
+    """
+    Apply Hamana shear cuts to the given list of sacc files.
+
+    Scale cuts from HSC PDR1 shear in real space analysis
+    Hamana et al. xip \in 7.08 < theta < 56.2 arcmin
+                  xim \in 28.2 < theta < 178.8 arcmin
+
+    Parameters:
+    sacc_list (list): A list of file paths to sacc files.
+
+    Returns:
+    s (sacc.Sacc): The modified sacc object after applying the cuts.
+    """
     text_to_add = 'HamanaShearSC'
     for sacc_fname in sacc_list:
         if os.path.exists(sacc_fname):
@@ -807,14 +994,20 @@ def ApplyHamanaShearCuts(sacc_list):
         else:
             print('>> File does not exist')
             continue
-    return(s)
+    return s
     
-def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_save, label, shear_cuts=True):
+def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_save, label, pz_method = 'pz_mz_eab', shear_cuts=True):
     # combmethod = 'ivw' or 'aw'
     print('<< Combined TXPipe data vector generation >>')
     # path_to_save = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw'
-    # Initialize empty sacc file
-    s = sacc.Sacc()
+    if combmethod == 'all':
+        print('  Initializing All-fields summary data vector')
+        path_aux = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/no-dndz'
+        fname_all = os.path.join(path_aux, 'summary_statistics_fourier.sacc')
+        s = sacc.Sacc.load_fits(fname_all)
+    else:
+        # Initialize empty sacc file
+        s = sacc.Sacc()
     # Hard-wired numbers, HSC specific
     nbins_lens = 4
     nbins_src = 4
@@ -823,9 +1016,14 @@ def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_sav
     #################################
     # Source sample
     # Hamana et al. / Hikage et al.
-    s = HikageSource_dndz(saccfile = s)
-    # Lens sample
-    s = TXPipeLens_dndz(saccfile = s)
+    s = HSCSource_dndz(saccfile = s)
+    if pz_method is None:
+        print('>> Lens n(z): Stacking true redshift distributions')
+        # Lens sample
+        s = TXPipeLens_dndz(saccfile = s)
+    else:
+        print(f'>> Lens n(z): HSC method - {pz_method}')
+        s = HSCLens_dndz(saccfile = s, pz_method = pz_method)
     #################################
     ###   Angular power spectra   ###
     ###       & covariance        ###
@@ -858,6 +1056,12 @@ def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_sav
         # Cov_{total} = sum(i = fields) w_i * Cov_i
         s = CovarianceAW(sacc_aw = s, sacc_list = sacc_list, meta_list = meta_list)
         s.save_fits(os.path.join(path_to_save, 'summary_statistics_fourier_aw.sacc'), overwrite=True)
+    elif combmethod == 'all':
+        print('>> Saving All-fields data vector')
+        s.save_fits(os.path.join(path_to_save, f'summary_statistics_fourier_all_{label}_{pz_method}.sacc'), overwrite=True)
+        if shear_cuts:
+            print('>> Applying Hikage et al. shear cuts (300 < ell < 1900)')
+            ApplyHikageShearCuts(sacc_list = [os.path.join(path_to_save, f'summary_statistics_fourier_all_{label}_{pz_method}.sacc')])
         
     if shear_cuts:
         print('>> Applying Hikage et al. shear cuts (300 < ell < 1900)')
@@ -897,7 +1101,7 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
         fname = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw/summary_statistics_fourier_aw.sacc'
     elif combmethod == 'all':
         print('>> Reading ALL-FIELDS measurement')
-        fname = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/outputs_all/summary_statistics_fourier.sacc'
+        fname = ('/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab.sacc')
     else:
         print('Combination method does not exist!')
     # Read sacc
@@ -905,10 +1109,11 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
     # Extract Cls
     if probe == 'galaxy_shear_cl_ee':
         ell, Cell, cov = s.get_ell_cl(probe, f'source_{i}', f'source_{j}', return_cov=True)
-        if combmethod == 'all':
+        """ if combmethod == 'all':
             # Removing noise
+            print('>> Shear Cells - Removing noise')
             nell = s.get_tag('n_ell', 'galaxy_shear_cl_ee', (f'source_{i}',f'source_{j}'))
-            Cell = Cell - nell
+            Cell = Cell - nell """
     elif probe == 'galaxy_density_cl':
         ell, Cell, cov = s.get_ell_cl(probe, f'lens_{i}', f'lens_{j}', return_cov=True)
     elif probe == 'galaxy_shearDensity_cl_e':
@@ -1017,24 +1222,42 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_all
                                 pass
                             else:
                                 continue
-                        # read cosmic shear data points
-                        ell, Cell, cov = s.get_ell_cl('galaxy_shear_cl_ee', f'source_{i}', f'source_{j}', return_cov=True)
-                        # extracting error from covariance
-                        err = np.sqrt(np.diag(cov))
+                        if "twopoint" in fn:
+                            # read cosmic shear data points
+                            ell, Cell = s.get_ell_cl('galaxy_shear_cl_ee', f'source_{i}', f'source_{j}', return_cov=False)
+                            # print('>> Substracting shape noise')
+                            # nell = s.get_tag('n_ell',data_type='galaxy_shear_cl_ee',tracers=(f'source_{i}',f'source_{j}'))
+                            # Cell = Cell - 0.5 * np.array(nell)
+                        else: 
+                            # read cosmic shear data points
+                            ell, Cell, cov = s.get_ell_cl('galaxy_shear_cl_ee', f'source_{i}', f'source_{j}', return_cov=True)
+                            # computing prefactor 
+                            pref = ell * (ell + 1) / (2 * np.pi)
+                            # extracting error from covariance
+                            err = np.sqrt(np.diag(cov))
+                            err = pref * err * 10 ** 4
                         # computing prefactor 
                         pref = ell * (ell + 1) / (2 * np.pi)
                         # compute Dell = l * (l + 1) * Cell / (2 * pi)
                         Dell = pref * Cell * 10 ** 4
-                        err = pref * err * 10 ** 4
-                        # plot
-                        axs[axind].errorbar(ell, Dell, err, 
-                                          # color=colors[k], 
-                                          fmt='o', 
-                                          markersize=3.0, 
-                                          capsize=2,
-                                          alpha=1.0,
-                                          label=f'{lab}')
-                                          # label=f'{lab.upper()}')
+                        if 'twopoint' in fn:
+                            # 
+                            axs[axind].scatter(ell, Dell, 
+                                               s=20.0, 
+                                               c='red', 
+                                               marker='x', 
+                                               alpha=1.0,
+                                               label=f'{lab}')
+                        else:
+                            # plot
+                            axs[axind].errorbar(ell, Dell, err, 
+                                            # color=colors[k], 
+                                            fmt='o', 
+                                            markersize=3.0, 
+                                            capsize=2,
+                                            alpha=1.0,
+                                            label=f'{lab}')
+                                            # label=f'{lab.upper()}')
             # new color for the next field
             k += 1
 
