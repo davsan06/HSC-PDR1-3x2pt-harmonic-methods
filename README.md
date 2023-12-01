@@ -3,13 +3,17 @@
 ## Data
 
 ### Catalogs
-Source and lens catalogs live in NERSC. We consider 5 different patches of the sky: GAMA09H, GAMA15H, VVDS, WIDE12H and XMM. Individual field catalogs can be found under `/global/cfs/projectdirs/lsst/groups/LSS/HSC_reanalysis/data_javi/2023_reanalysis`, lens catalogs are named `photometry_lenscatalog_hsc_{FIELD}_nonmetacal_pdr1.h5` and source catalogs are `shear_sourcecatalog_hsc_{FIELDS}_nonmetacal_05_22.h5`. Stacked catalogs with all the info from the different regions of the sky can also be found with the names `photometry_lenscatalog_hsc_ALL_nonmetacal_pdr1_11_06.h5` and `shear_sourcecatalog_hsc_ALL_nonmetacal_11_06.h5i
-
+Source and lens catalogs live in NERSC. We consider 5 different patches of the sky: GAMA09H, GAMA15H, VVDS, WIDE12H and XMM. Individual field catalogs can be found under `/global/cfs/projectdirs/lsst/groups/LSS/HSC_reanalysis/data_javi/2023_reanalysis`, lens catalogs are named `photometry_lenscatalog_hsc_{FIELD}_nonmetacal_pdr1.h5` and source catalogs are `shear_sourcecatalog_hsc_{FIELDS}_nonmetacal_05_22.h5`. Stacked catalogs with all the info from the different regions of the sky can also be found with the names `photometry_lenscatalog_hsc_ALL_nonmetacal_pdr1_11_06.h5` and `shear_sourcecatalog_hsc_ALL_nonmetacal_11_06.h5`
 ### Mask
 Masks used for the galaxy clustering measurements are saved here `data/mask/star_snr10_imag245/mask_star_snr10_imag245_nside2048_{FIELD}.hs`. This masks are built considering: (i) SNR(i-band) ~ 10, (ii) mag_i > 24.5 and (iii) bright-star mask. See the paper for more details.
 
+### TXPipe configuration files
+In NERSC you can find the ini-files in yaml format and the derived data products from tomographic catalogs to the final data vector or summary statistic. Path: `/global/cfs/projectdirs/lsst/groups/LSS/HSC_reanalysis/txpipe`
+
 ### Harmonic space
 * TXPipe (This work)
+
+Fiducial data vector: 
 
 * Nicola et al.
 
