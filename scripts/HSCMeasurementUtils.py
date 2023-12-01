@@ -1101,7 +1101,7 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
         fname = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw/summary_statistics_fourier_aw.sacc'
     elif combmethod == 'all':
         print('>> Reading ALL-FIELDS measurement')
-        fname = ('/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab.sacc')
+        fname = ('/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/outputs_all/summary_statistics_fourier.sacc')
     else:
         print('Combination method does not exist!')
     # Read sacc
@@ -1116,6 +1116,15 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
             Cell = Cell - nell """
     elif probe == 'galaxy_density_cl':
         ell, Cell, cov = s.get_ell_cl(probe, f'lens_{i}', f'lens_{j}', return_cov=True)
+        noise = np.array(s.get_tag("n_ell", data_type="galaxy_density_cl", tracers=(f"lens_{i}",f"lens_{j}")))
+        # if all the elements in noise are None, continue and do not remove noise
+        if np.all(noise == None):
+            pass
+        else:
+            print(i,j)
+            print(noise)
+            print('>> Clustering Cells - Removing noise')
+            Cell = Cell - noise
     elif probe == 'galaxy_shearDensity_cl_e':
         ell, Cell, cov = s.get_ell_cl(probe, f'source_{i}', f'lens_{j}', return_cov=True)
     # extracting error from covariance
@@ -1662,7 +1671,7 @@ def Shear2pt_plot_Hamana_real(save_fig=False):
                     dpi=300,
                     bbox_inches='tight')
     return()
-def Clustering2pt_plot(fname,labels,add_individual=False,add_allfields=False,add_combined=False,add_literature=False,  
+def Clustering2pt_plot(fname,labels, Dell_scaling=True, add_individual=False,add_allfields=False,add_combined=False,add_literature=False,  
                        add_byhand=False,show_residual=False,save_fig=False, 
                        savepath='/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/measurements/clustering'):
     #########################################################################################
@@ -1695,7 +1704,10 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_allfields=False,add
 
     plt.subplots_adjust(wspace=0.02, hspace=0.0)
     # Initialize text label for savefig
-    textfig = 'Clustering2pt'
+    if Dell_scaling == True:
+        textfig = 'Clustering2pt_Dell'
+    else:
+        textfig = 'Clustering2pt_Cell'
     print('>> Initializing figure ...')
     # Initialize figure and format
     #loop over redshift bins
@@ -1717,7 +1729,10 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_allfields=False,add
                 # z-bin pair
                 axs[ind_plot].text(0.15, 0.85,f'({i + 1},{j + 1})', ha='center', va='center', transform=axs[ind_plot].transAxes, fontsize=12)
                 if i == 0:
-                    axs[ind_plot].set_ylabel('$\mathcal{D}^{\delta \delta}_\ell [\\times 10]$')
+                    if Dell_scaling == True:
+                        axs[ind_plot].set_ylabel('$\mathcal{D}^{\delta \delta}_\ell [\\times 10]$')
+                    else:
+                        axs[ind_plot].set_ylabel('$C^{\delta \delta}_\ell$')
                 if show_residual == True:
                     axs[ind_res].set_xlabel('multipole, $\ell$')
                     if i == 0:
@@ -1767,24 +1782,42 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_allfields=False,add
                             Cell = Cell - noise
                         else:
                             print('No noise to substract')
-                        # computing prefactor 
-                        pref = ell * (ell + 1) / (2 * np.pi)
-                        Dell = pref * Cell * 10
+                        if Dell_scaling == True:
+                            # computing prefactor 
+                            pref = ell * (ell + 1) / (2 * np.pi)
+                            Dell = pref * Cell * 10
                         # print(ell,Dell)
                         # extracting error from covariance
                         if 'summary' in fn:
                             err = np.sqrt(np.diag(cov))
-                            err = pref * err * 10
-                            # plot
-                            axs[ind_plot].errorbar(ell, Dell, err, 
-                                            color=colors[k], 
-                                            fmt='o', 
-                                            markersize=3.0, 
-                                            capsize=2,
-                                            alpha=0.3,
-                                            label=f'{lab.upper()}')
+                            if Dell_scaling == True:
+                                err = pref * err * 10
+                                # plot
+                                axs[ind_plot].errorbar(ell, Dell, err, 
+                                                color=colors[k], 
+                                                fmt='o', 
+                                                markersize=3.0, 
+                                                capsize=2,
+                                                alpha=0.3,
+                                                label=f'{lab.upper()}')
+                            else:
+                                # plot
+                                axs[ind_plot].errorbar(ell, Cell, err, 
+                                                color=colors[k], 
+                                                fmt='o', 
+                                                markersize=3.0, 
+                                                capsize=2,
+                                                alpha=0.3,
+                                                label=f'{lab.upper()}')
                         elif 'twopoint' in fn:
-                            axs[ind_plot].scatter(ell, Dell,
+                            if Dell_scaling == True:
+                                axs[ind_plot].scatter(ell, Dell,
+                                           color=colors[k],
+                                           s=2.5,
+                                           alpha=0.3,
+                                           label=f'{lab.upper()}')
+                            else:
+                                axs[ind_plot].scatter(ell, Cell,
                                            color=colors[k],
                                            s=2.5,
                                            alpha=0.3,
@@ -1838,19 +1871,28 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_allfields=False,add
                             ind_plot = i
                         # Read IVW combined measurement (This work)
                         ell_txp, Cell_txp, err_txp, cov_txo = Read_TXPipe_CombMeas_Cells(probe='galaxy_density_cl',i=i,j=j, combmethod='aw')
-                        # computing prefactor 
-                        pref = ell_txp * (ell_txp + 1) / (2 * np.pi)
-                        # compute Dell = l * (l + 1) * Cell / (2 * pi)
-                        Dell_txp = pref * Cell_txp * 10
-                        err_txp = pref * err_txp * 10 
+                        if Dell_scaling == True:
+                            # computing prefactor 
+                            pref = ell_txp * (ell_txp + 1) / (2 * np.pi)
+                            # compute Dell = l * (l + 1) * Cell / (2 * pi)
+                            Dell_txp = pref * Cell_txp * 10
+                            err_txp = pref * err_txp * 10 
 
-                        # plot
-                        axs[ind_plot].errorbar(ell_txp, Dell_txp, err_txp, 
-                                                color='orange', 
-                                                fmt='o', 
-                                                markersize=3.0, 
-                                                capsize=2,
-                                                label='This work (AW)')
+                            # plot
+                            axs[ind_plot].errorbar(ell_txp, Dell_txp, err_txp, 
+                                                    color='orange', 
+                                                    fmt='o', 
+                                                    markersize=3.0, 
+                                                    capsize=2,
+                                                    label='This work (AW)')
+                        else: 
+                            # plot
+                            axs[ind_plot].errorbar(ell_txp, Cell_txp, err_txp, 
+                                                    color='orange', 
+                                                    fmt='o', 
+                                                    markersize=3.0, 
+                                                    capsize=2,
+                                                    label='This work (AW)')
         elif add_combined == 'ivw_lens_dr1' or add_combined == 'ivw_lens_s16a':
             textfig += 'IVW'
             #loop over redshift bins
@@ -1881,20 +1923,30 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_allfields=False,add
                                                                                              combmethod='ivw',
                                                                                              lens_sample='s16a')
                             label_comb = 'This work (S16A)'
-                        # computing prefactor 
-                        pref = ell_txp * (ell_txp + 1) / (2 * np.pi)
-                        # compute Dell = l * (l + 1) * Cell / (2 * pi)
-                        Dell_txp = pref * Cell_txp * 10
-                        err_txp = pref * err_txp * 10 
+                        if Dell_scaling == True:
+                            # computing prefactor 
+                            pref = ell_txp * (ell_txp + 1) / (2 * np.pi)
+                            # compute Dell = l * (l + 1) * Cell / (2 * pi)
+                            Dell_txp = pref * Cell_txp * 10
+                            err_txp = pref * err_txp * 10 
 
-                        # plot
-                        axs[ind_plot].errorbar(ell_txp, Dell_txp, err_txp, 
-                                        color='k', 
-                                        fmt='o', 
-                                        mfc='w',
-                                        markersize=3.0, 
-                                        capsize=2,
-                                        label=label_comb)
+                            # plot
+                            axs[ind_plot].errorbar(ell_txp, Dell_txp, err_txp, 
+                                            color='k', 
+                                            fmt='o', 
+                                            mfc='w',
+                                            markersize=3.0, 
+                                            capsize=2,
+                                            label=label_comb)
+                        else: 
+                            # plot
+                            axs[ind_plot].errorbar(ell_txp, Cell_txp, err_txp, 
+                                            color='k', 
+                                            fmt='o', 
+                                            mfc='w',
+                                            markersize=3.0, 
+                                            capsize=2,
+                                            label=label_comb)
                         snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                         # z-bin pair
                         axs[ind_plot].text(0.85, 0.05,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[ind_plot].transAxes, fontsize=6)
@@ -1924,6 +1976,8 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_allfields=False,add
                             axs[ind_res].axhspan(-1, 1, alpha=0.1, color='k')
                             # Set y-lims between -5 and 5 sigma
                             axs[ind_res].set_ylim([-3, 3])
+        else:
+            print('>> No combined measurement added')
     if add_allfields == True:
         textfig += '_AllFields'
         #loop over redshift bins
@@ -1941,19 +1995,28 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_allfields=False,add
                                                                                      combmethod='all',
                                                                                      lens_sample='dr1')
                     label_comb = 'This work (All fields)'
-                    # computing prefactor 
-                    pref = ell_txp * (ell_txp + 1) / (2 * np.pi)
-                    # compute Dell = l * (l + 1) * Cell / (2 * pi)
-                    Dell_txp = pref * Cell_txp * 10
-                    err_txp = pref * err_txp * 10 
+                    if Dell_scaling == True:
+                        # computing prefactor 
+                        pref = ell_txp * (ell_txp + 1) / (2 * np.pi)
+                        # compute Dell = l * (l + 1) * Cell / (2 * pi)
+                        Dell_txp = pref * Cell_txp * 10
+                        err_txp = pref * err_txp * 10 
 
-                    # plot
-                    axs[ind_plot].errorbar(ell_txp, Dell_txp, err_txp, 
-                                    color='k', 
-                                    fmt='o', 
-                                    markersize=3.0, 
-                                    capsize=2,
-                                    label=label_comb)
+                        # plot
+                        axs[ind_plot].errorbar(ell_txp, Dell_txp, err_txp, 
+                                        color='k', 
+                                        fmt='o', 
+                                        markersize=3.0, 
+                                        capsize=2,
+                                        label=label_comb)
+                    else:
+                        # plot
+                        axs[ind_plot].errorbar(ell_txp, Cell_txp, err_txp, 
+                                        color='k', 
+                                        fmt='o', 
+                                        markersize=3.0, 
+                                        capsize=2,
+                                        label=label_comb)
                     snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                     # z-bin pair
                     axs[ind_plot].text(0.85, 0.05,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[ind_plot].transAxes, fontsize=6)            
@@ -1966,17 +2029,28 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_allfields=False,add
             else:
                 ind_plot = i
             ell_an, Cell_an, err = NicolaClustering_Cells(i)
-            pref = ell_an * (ell_an + 1) / (2 * np.pi)
-            Dell_an = pref * Cell_an * 10
-            err_an = pref * err * 10
-            # plot
-            axs[ind_plot].errorbar(ell_an, Dell_an, err_an, 
-                            color='red',
-                            mfc='w', 
-                            fmt='o', 
-                            markersize=3.0, 
-                            capsize=2,
-                            label='Nicola et al.')
+            if Dell_scaling == True:
+                # computing prefactor
+                pref = ell_an * (ell_an + 1) / (2 * np.pi)
+                Dell_an = pref * Cell_an * 10
+                err_an = pref * err * 10
+                # plot
+                axs[ind_plot].errorbar(ell_an, Dell_an, err_an, 
+                                color='red',
+                                mfc='w', 
+                                fmt='o', 
+                                markersize=3.0, 
+                                capsize=2,
+                                label='Nicola et al.')
+            else:
+                # plot
+                axs[ind_plot].errorbar(ell_an, Cell_an, err_an, 
+                                color='red',
+                                mfc='w', 
+                                fmt='o', 
+                                markersize=3.0, 
+                                capsize=2,
+                                label='Nicola et al.')
     if add_byhand == True:
         textfig += '_ByHand'
         # Javi clustering measurement by hand
@@ -2003,11 +2077,13 @@ def Clustering2pt_plot(fname,labels,add_individual=False,add_allfields=False,add
             nell = data[f'nl_{i}']
             # Substract the noise
             cell = cell - nell
-            # compute Dell
-            dell = cell * prefactor
-            # Scatter plot Dell with crosses 
-            axs[i].scatter(ell, dell, s=2, marker='x', color='k', label='Javi')
-            
+            if Dell_scaling == True:
+                # compute Dell
+                dell = cell * prefactor
+                # Scatter plot Dell with crosses 
+                axs[i].scatter(ell, dell, s=2, marker='x', color='k', label='Javi')
+            else:
+                axs[i].scatter(ell, cell, s=2, marker='x', color='k', label='Javi')
             # if i == 0:
             #     ax[i].set_ylabel(r'$D_\ell [\times 10]$', fontsize=20)
             
