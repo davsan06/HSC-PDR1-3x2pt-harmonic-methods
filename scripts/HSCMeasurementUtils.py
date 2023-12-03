@@ -2532,7 +2532,7 @@ def ComputeChisq_NullTest(s, data_type):
     
     # Loop over data_types and remove them from the data vector
     for dt in data_types:
-        s.remove_data_type(dt)
+        s.remove_selection(dt)
     
     # Compute the chi-square statistic
     chi2 = np.dot(s.mean, np.linalg.solve(s.covariance.covmat, s.mean))
