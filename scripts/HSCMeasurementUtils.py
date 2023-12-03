@@ -1142,7 +1142,6 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
 ################################
 ###  Plotting 2pt functions  ###
 ################################
-
 def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_allfields=False, add_literature=False, add_Hikage_sacc=False, \
                    theory_fname=None, just_auto = False, save_fig=False, savepath='/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/measurements/cosmicshear'):
     ####################################################################
@@ -2257,6 +2256,144 @@ def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_
     plt.show()
     plt.close()
     return()
+
+################################
+###  Null tests  ###
+################################
+def Shear2pt_NullTest_plot(fname, just_auto=False, save_fig=False, savepath='/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/measurements/cosmicshear'):
+    """
+    Plot the shear 2-point correlation functions for null tests.
+
+    Args:
+        fname (str): The file path of the FITS file containing the data.
+        just_auto (bool, optional): If True, only plot the auto-correlation functions. Defaults to False.
+        save_fig (bool, optional): If True, save the figure. Defaults to False.
+        savepath (str, optional): The directory path to save the figure. Defaults to '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/measurements/cosmicshear'.
+
+    Returns:
+        int: 0 indicating successful execution of the function.
+    """
+    
+    print('>> FNAME: ', fname)
+    s = sacc.Sacc.load_fits(fname)
+    nbins_src = 4
+    # generate the subplot structure
+    if just_auto:
+        fig, axs = plt.subplots(1, nbins_src, sharex=True, sharey='row', figsize=(10,3))
+    else:
+        fig, axs = plt.subplots(nbins_src, nbins_src, sharex=True, sharey='row', figsize=(10,10))
+    fig.tight_layout()
+    plt.subplots_adjust(wspace=0, hspace=0)
+
+    # Initialize text label for savefig
+    textfig = 'Shear2pt_NullTest'
+    # Initialize figure and format
+    #loop over redshift bins
+    for i in np.arange(nbins_src):
+        for j in np.arange(nbins_src):
+            if i >= j:
+                axind = (i,j)
+                if just_auto:
+                    if i == j:
+                        axind = i
+                        pass
+                    else:
+                        continue
+                # log-log scale
+                axs[axind].set_xscale('log')
+                # scale cuts
+                axs[axind].axvline(300, ls='--', c='k', linewidth=0.5)
+                axs[axind].axvline(1900, ls='--', c='k', linewidth=0.5)
+                axs[axind].axhline(0, ls='--', c='k', linewidth=0.5)
+                axs[axind].axvspan(xmin=50, xmax=300, color='grey', alpha=0.01)
+                axs[axind].axvspan(xmin=1900, xmax=6800, color='grey', alpha=0.01)
+                # x-lim range
+                axs[axind].set_xlim([90, 6144])
+                # z-bin pair
+                axs[axind].text(0.85, 0.85,f'({i + 1},{j + 1})', ha='center', va='center', transform=axs[axind].transAxes, fontsize=12)
+                if just_auto == False:
+                    if i == 1:
+                        axs[axind].set_ylim([-5., 5.])
+                    if i == 2:
+                        axs[axind].set_ylim([-10., 10.])
+                    if i == 3:
+                        axs[axind].set_ylim([-10., 10.])
+
+                if j == 0:
+                    axs[axind].set_ylabel('$C^{\kappa \kappa}_\ell [\\times 10^{10}]$')
+                if just_auto:
+                    axs[axind].set_xlabel('multipole, $\ell$')
+                    axs[axind].set_xticks((100,1000),labels=('100','1000'))
+                else:
+                    if (i == nbins_src - 1):
+                        axs[axind].set_xlabel('multipole, $\ell$')
+                        axs[axind].set_xticks((100,1000),labels=('100','1000'))
+            else:
+                if just_auto:
+                    continue
+                else:
+                    axs[i,j].axis('off')
+
+    #loop over redshift bins
+    for i in np.arange(nbins_src):
+        for j in np.arange(nbins_src):
+            if i >= j:
+                axind = (i,j)
+                if just_auto:
+                    if i == j:
+                        axind = i
+                        pass
+                    else:
+                        continue
+                # B-modes 
+                ell, bb, cov_bb = s.get_ell_cl(data_type='galaxy_shear_cl_bb', tracer1=f'source_{i}', tracer2=f'source_{j}', return_cov=True)
+                bb = bb * 10 ** 10
+                err = np.sqrt(np.diag(cov_bb)) * 10 ** 10
+                axs[axind].errorbar(ell, bb, err, 
+                                color=colors[5], 
+                                fmt='o', 
+                                markersize=3.0, 
+                                capsize=2,
+                                alpha=1.0,
+                                label='BB')
+                # EB-modes
+                ell, eb, cov_eb = s.get_ell_cl(data_type='galaxy_shear_cl_eb', tracer1=f'source_{i}', tracer2=f'source_{j}', return_cov=True)
+                eb = eb * 10 ** 10
+                err = np.sqrt(np.diag(cov_eb)) * 10 ** 10
+                axs[axind].errorbar(ell, eb, err, 
+                                color=colors[6], 
+                                fmt='o', 
+                                markersize=3.0, 
+                                capsize=2,
+                                alpha=1.0,
+                                label='EB')
+                # BE-modes
+                ell, be, cov_be = s.get_ell_cl(data_type='galaxy_shear_cl_be', tracer1=f'source_{i}', tracer2=f'source_{j}', return_cov=True)
+                be = be * 10 ** 10
+                err = np.sqrt(np.diag(cov_be)) * 10 ** 10
+                axs[axind].errorbar(ell, be, err, 
+                                color=colors[7], 
+                                fmt='o', 
+                                markersize=3.0, 
+                                capsize=2,
+                                alpha=1.0,
+                                label='BE')
+    if just_auto:
+        axs[0].legend(frameon=False,fontsize=12)
+    else:
+        axs[0,0].legend(frameon=False,fontsize=12)
+    if save_fig == True:
+        print('>> Saving figure ...')
+        print(' Path: ', savepath)
+        plt.savefig(os.path.join(savepath, f'{textfig}.png'),
+            dpi=300,
+            bbox_inches='tight')
+        plt.savefig(os.path.join(savepath, f'{textfig}.pdf'),
+            dpi=300,
+            bbox_inches='tight')
+    plt.show()
+    plt.close()
+    return 0
 
 ########################################
 ###   Statistics & goodness-of-fit   ###
