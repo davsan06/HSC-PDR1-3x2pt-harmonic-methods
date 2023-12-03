@@ -1005,6 +1005,23 @@ def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_sav
         path_aux = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/no-dndz'
         fname_all = os.path.join(path_aux, 'summary_statistics_fourier.sacc')
         s = sacc.Sacc.load_fits(fname_all)
+        for i in np.arange(4):
+            for j in np.arange(4):
+                if i >= j:
+                    ell, Cell = s.get_ell_cl('galaxy_density_cl', f'lens_{i}', f'lens_{j}', return_cov=False)
+                    # Remove shot noise from clustering signal
+                    noise = np.array(s.get_tag("n_ell", data_type="galaxy_density_cl", tracers=(f"lens_{i}",f"lens_{j}")))
+                    # if all the elements in noise are None, continue and do not remove noise
+                    if np.all(noise == None):
+                        pass
+                    else:
+                        print(i,j)
+                        print(noise)
+                        print('>> Clustering Cells - Removing noise')
+                        Cell = Cell - noise
+                        # Add to the IVW data vector
+                        for  ind in np.arange(len(Cell)):
+                            s.add_ell_cl('galaxy_density_cl', f'lens_{i}', f'lens_{j}', ell=ell[ind], x=Cell[ind])
     else:
         # Initialize empty sacc file
         s = sacc.Sacc()
@@ -1116,15 +1133,6 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
             Cell = Cell - nell """
     elif probe == 'galaxy_density_cl':
         ell, Cell, cov = s.get_ell_cl(probe, f'lens_{i}', f'lens_{j}', return_cov=True)
-        noise = np.array(s.get_tag("n_ell", data_type="galaxy_density_cl", tracers=(f"lens_{i}",f"lens_{j}")))
-        # if all the elements in noise are None, continue and do not remove noise
-        if np.all(noise == None):
-            pass
-        else:
-            print(i,j)
-            print(noise)
-            print('>> Clustering Cells - Removing noise')
-            Cell = Cell - noise
     elif probe == 'galaxy_shearDensity_cl_e':
         ell, Cell, cov = s.get_ell_cl(probe, f'source_{i}', f'lens_{j}', return_cov=True)
     # extracting error from covariance
@@ -2365,6 +2373,61 @@ def ComputeChisq(sacc_fname, theory_fname, probe, npar):
     chisq_ndof = chisq / ndof
     print(f'Chisq / ndof = {np.round(chisq_ndof, 2)}')
     return(chisq, chisq_ndof, ndof)
+
+def ComputeChisq_NullTest(s, data_type):
+    """
+    Computes the chi-square statistic and p-value for a null-test of a specific data type in a given Sacc object.
+
+    Parameters:
+    s (Sacc): The Sacc object containing the data.
+    data_type (str): The data type for which the null-test is performed.
+
+    Returns:
+    chi2 (float): The chi-square statistic.
+    """
+    import scipy.stats as stats
+
+    # Extract all the data types in the data vector
+    data_types = s.get_data_types()
+    
+    # Remove the data type we want to keep in the dv from the data_types list
+    data_types.remove(data_type)
+    
+    # Loop over data_types and remove them from the data vector
+    for dt in data_types:
+        s.remove_data_type(dt)
+    
+    # Compute the chi-square statistic
+    chi2 = np.dot(s.mean, np.linalg.solve(s.covariance.covmat, s.mean))
+    
+    # Compute the degrees of freedom
+    ndof = len(s.mean)
+    
+    # Compute the p-value
+    p = 1 - stats.chi2.cdf(chi2, ndof)
+
+    print('     PREVIOUS TO SCALE CUTS')
+    print('     chi^2 = %.1lf, dof = %d, P = %.10lf' % (chi2, ndof, p))
+
+    # Apply scale cuts
+    print('     Apply scale cuts')
+    s.remove_selection(data_type=data_type, ell__lt=300)
+    s.remove_selection(data_type=data_type, ell__gt=1900)
+
+    # Recompute the chi-square statistic after applying scale cuts
+    chi2 = np.dot(s.mean, np.linalg.solve(s.covariance.covmat, s.mean))
+    
+    # Recompute the degrees of freedom after applying scale cuts
+    ndof = len(s.mean)
+    
+    # Recompute the p-value after applying scale cuts
+    p = 1 - stats.chi2.cdf(chi2, ndof)
+
+    print('     AFTER CONSIDERING SCALE CUTS')
+    print('     chi^2 = %.1lf, dof = %d, P = %.10lf' % (chi2, ndof, p))
+
+    return chi2
+
 
 def ComputeSNR(signal, cov):
     # Inversion of the covariance
