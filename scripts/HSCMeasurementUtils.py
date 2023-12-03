@@ -2350,7 +2350,7 @@ def Shear2pt_NullTest_plot(fname, just_auto=False, save_fig=False, savepath='/ps
                 bb = bb * 10 ** 10
                 err = np.sqrt(np.diag(cov_bb)) * 10 ** 10
                 axs[axind].errorbar(ell, bb, err, 
-                                color=colors[5], 
+                                color=colors[0], 
                                 fmt='o', 
                                 markersize=3.0, 
                                 capsize=2,
@@ -2361,7 +2361,7 @@ def Shear2pt_NullTest_plot(fname, just_auto=False, save_fig=False, savepath='/ps
                 eb = eb * 10 ** 10
                 err = np.sqrt(np.diag(cov_eb)) * 10 ** 10
                 axs[axind].errorbar(ell, eb, err, 
-                                color=colors[6], 
+                                color=colors[1], 
                                 fmt='o', 
                                 markersize=3.0, 
                                 capsize=2,
@@ -2372,7 +2372,7 @@ def Shear2pt_NullTest_plot(fname, just_auto=False, save_fig=False, savepath='/ps
                 be = be * 10 ** 10
                 err = np.sqrt(np.diag(cov_be)) * 10 ** 10
                 axs[axind].errorbar(ell, be, err, 
-                                color=colors[7], 
+                                color=colors[2], 
                                 fmt='o', 
                                 markersize=3.0, 
                                 capsize=2,
@@ -2394,6 +2394,70 @@ def Shear2pt_NullTest_plot(fname, just_auto=False, save_fig=False, savepath='/ps
     plt.show()
     plt.close()
     return 0
+
+def Gammat2pt_NullTest_plot(fname, save_fig=False, savepath='/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/measurements/gglensing'):
+    # fname list of sacc data vectors
+    # labels list of labels for the dvs
+    nbins_lens = 4
+    nbins_src = 4
+    # generate the subplot structure
+    fig, axs = plt.subplots(nbins_src, nbins_lens, sharex=True, sharey='row', figsize=(10,10))
+    fig.tight_layout()
+    plt.subplots_adjust(wspace=0, hspace=0)
+    # Initialize figure and format
+    textfig = 'Gammat2pt_NullTest'   
+    #loop over redshift bins
+    #loop over redshift bins
+    for i in np.arange(nbins_src):
+        for j in np.arange(nbins_lens):
+            # log-log scale
+            axs[i, j].set_xscale('log')
+            # Set y lim to -1, 1
+            axs[i, j].set_ylim([-1, 1])
+            # # scale cuts
+            axs[i,j].axhline(0, ls='--', c='k', linewidth=0.5)
+            # x-lim range
+            axs[i,j].set_xlim([90, 2500])
+            # z-bin pair
+            axs[i,j].text(0.85, 0.85,f'({i + 1},{j + 1})', ha='center', va='center', transform=axs[i,j].transAxes, fontsize=12)
+            if j == 0:
+                axs[i,j].set_ylabel('$C^{\kappa \delta}_\ell [\\times 10^8]$')
+            if (i == nbins_src - 1):
+                axs[i,j].set_xlabel('multipole, $\ell$')
+                axs[i,j].set_xticks((100,1000),labels=('100','1000'))
+    textfig += '_Fields'
+    s = sacc.Sacc.load_fits(fname)
+    #loop over redshift bins
+    for i in np.arange(nbins_src):
+        for j in np.arange(nbins_lens):
+            ell, Cell, cov = s.get_ell_cl('galaxy_shearDensity_cl_b', f'source_{i}', f'lens_{j}', return_cov=True)
+            # extracting error from covariance
+            Cell = Cell * 10 ** 8
+            err = np.sqrt(np.diag(cov)) * 10 ** 8
+
+            # plot
+            axs[i,j].errorbar(ell, Cell, err, 
+                                color=colors[0], 
+                                fmt='o', 
+                                markersize=3.0, 
+                                capsize=2,
+                                alpha=1.0,
+                                label='B-mode')
+    
+    axs[0,0].legend(frameon=False,fontsize=12)
+    if save_fig == True:
+        print('>> Saving figure ...')
+        print(' Path: ', savepath)
+        plt.savefig(os.path.join(savepath, f'{textfig}.png'),
+            dpi=300,
+            bbox_inches='tight')
+        plt.savefig(os.path.join(savepath, f'{textfig}.pdf'),
+            dpi=300,
+            bbox_inches='tight')
+    plt.show()
+    plt.close()
+    return()
+
 
 ########################################
 ###   Statistics & goodness-of-fit   ###
@@ -2546,22 +2610,23 @@ def ComputeChisq_NullTest(s, data_type):
     print('     PREVIOUS TO SCALE CUTS')
     print('     chi^2 = %.1lf, dof = %d, P = %.10lf' % (chi2, ndof, p))
 
-    # Apply scale cuts
-    print('     Apply scale cuts')
-    s.remove_selection(data_type=data_type, ell__lt=300)
-    s.remove_selection(data_type=data_type, ell__gt=1900)
+    if 'galaxy_shear_cl_' in data_type:
+        # Apply scale cuts
+        print('     Apply scale cuts')
+        s.remove_selection(data_type=data_type, ell__lt=300)
+        s.remove_selection(data_type=data_type, ell__gt=1900)
 
-    # Recompute the chi-square statistic after applying scale cuts
-    chi2 = np.dot(s.mean, np.linalg.solve(s.covariance.covmat, s.mean))
-    
-    # Recompute the degrees of freedom after applying scale cuts
-    ndof = len(s.mean)
-    
-    # Recompute the p-value after applying scale cuts
-    p = 1 - stats.chi2.cdf(chi2, ndof)
+        # Recompute the chi-square statistic after applying scale cuts
+        chi2 = np.dot(s.mean, np.linalg.solve(s.covariance.covmat, s.mean))
+        
+        # Recompute the degrees of freedom after applying scale cuts
+        ndof = len(s.mean)
+        
+        # Recompute the p-value after applying scale cuts
+        p = 1 - stats.chi2.cdf(chi2, ndof)
 
-    print('     AFTER CONSIDERING SCALE CUTS')
-    print('     chi^2 = %.1lf, dof = %d, P = %.10lf' % (chi2, ndof, p))
+        print('     AFTER CONSIDERING SCALE CUTS')
+        print('     chi^2 = %.1lf, dof = %d, P = %.10lf' % (chi2, ndof, p))
 
     return chi2
 
