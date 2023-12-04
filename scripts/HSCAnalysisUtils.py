@@ -8,6 +8,7 @@ import os
 import sacc
 import datetime
 import time
+import sys
 sys.path.append('/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/scripts/')
 import HSCMeasurementUtils as hmu
 
@@ -152,7 +153,7 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
         z = s.tracers[f'lens_{i}'].z
         nz = s.tracers[f'lens_{i}'].nz
         S.add_tracer('NZ', f'lens_{i}', z, nz)
-        plt.plot(z, nz)
+        plt.plot(z, nz, color=colors[i])
     plt.show()
     plt.close()
     #########################
@@ -176,6 +177,10 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
 
                 z_arr_1 = s.tracers[f'lens_{i}'].z
                 z_arr_2 = s.tracers[f'lens_{j}'].z
+
+                # Set first element on redshift array to zero
+                z_arr_1[0] = 0.
+                z_arr_2[0] = 0.
 
                 if np.all(z_arr_1 == z_arr_2):
                     z_arr = z_arr_1
@@ -206,8 +211,11 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
     print('>> Covariance matrix shape BEFORE removing GGL and Shear')
     print(s.covariance.covmat.shape)
     # Cut dv to just have galaxy clustering part ...
-    s.remove_selection(data_type='galaxy_shearDensity_cl_e')
-    s.remove_selection(data_type='galaxy_shear_cl_ee')
+    data_types = s.get_data_types()
+    # Remove from data_types all the elements except galaxy clustering
+    for i in np.arange(len(data_types)):
+        if data_types[i] != 'galaxy_density_cl':
+            s.remove_selection(data_type=data_types[i])
     print('>> Covariance matrix shape AFTER removing GGL and Shear')
     print(s.covariance.covmat.shape)
     print('>> Length of the signal: ', len(s.mean))
@@ -217,7 +225,7 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
     print('>> Introducing covariance matrix')
     S.add_covariance(cov)
     # Plotting the correlation matrix
-    Covariance_Plot(s = S, savefig=False)
+    hmu.Covariance_Plot(s = S, savefig=False)
     ################################
     ###   Save the data vector   ###
     ################################

@@ -8,6 +8,8 @@ import h5py
 import healpy as hp
 import seaborn as sns
 
+
+
 # Define matplolib colors: black, purple, green, red
 colors = ['#000000', '#800080', '#008000', '#ff0000', "#E69F00", "#56B4E9", "#009E73", "#F0E442", '#800080', "#0072B2", "#CC79A7", "#D55E00"]
 
@@ -1785,6 +1787,9 @@ def Clustering2pt_plot(fname,labels, Dell_scaling=True, add_individual=False,add
                                 print('DV w/o covariance')
                             ell, Cell = s.get_ell_cl("galaxy_density_cl", f'lens_{i}', f'lens_{j}', return_cov=False)
                         noise = s.get_tag("n_ell", data_type="galaxy_density_cl", tracers=(f"lens_{i}",f"lens_{j}"))
+                        # Check if all the elements in noise are None
+                        if all(v is None for v in noise):
+                            noise = None
                         if noise is not None:
                             # Substract noise
                             if i == 0:
