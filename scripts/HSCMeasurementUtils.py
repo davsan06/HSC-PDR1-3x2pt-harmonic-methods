@@ -196,7 +196,7 @@ def Mask_plot(fname,title,nside=2048):
     cbar.set_label('fracdet')
     return()
 
-def RedshiftDistr_plot(sacc, savepath = None):
+def RedshiftDistr_plot(sacc, label, savepath = None):
     """
     Plots the redshift distribution of the sources and lenses.
 
@@ -250,14 +250,17 @@ def RedshiftDistr_plot(sacc, savepath = None):
     # Remove y ticks from both plots
     ax1.set_yticks([])
     ax2.set_yticks([])
+    # Y axis will start in 0
+    ax1.set_ylim(bottom=0)
+    ax2.set_ylim(bottom=0)
     ax2.set_xlabel('z')
     if savepath is not None:
         print(">> Saving figure...")
-        print(os.path.join(savepath, 'dndz.pdf'))
+        print(os.path.join(savepath, f'dndz_{label}.pdf'))
         plt.savefig(os.path.join(savepath, 'dndz.png'),
                      dpi=300,
                      bbox_inches='tight')
-        plt.savefig(os.path.join(savepath, 'dndz.pdf'),
+        plt.savefig(os.path.join(savepath, f'dndz_{label}.pdf'),
                      dpi=300,
                      bbox_inches='tight')
         
@@ -1005,7 +1008,7 @@ def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_sav
         path_aux = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/no-dndz'
         fname_all = os.path.join(path_aux, 'summary_statistics_fourier.sacc')
         s = sacc.Sacc.load_fits(fname_all)
-        for i in np.arange(4):
+        """ for i in np.arange(4):
             for j in np.arange(4):
                 if i >= j:
                     ell, Cell = s.get_ell_cl('galaxy_density_cl', f'lens_{i}', f'lens_{j}', return_cov=False)
@@ -1021,7 +1024,7 @@ def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_sav
                         Cell = Cell - noise
                         # Add to the IVW data vector
                         for  ind in np.arange(len(Cell)):
-                            s.add_ell_cl('galaxy_density_cl', f'lens_{i}', f'lens_{j}', ell=ell[ind], x=Cell[ind])
+                            s.add_ell_cl('galaxy_density_cl', f'lens_{i}', f'lens_{j}', ell=ell[ind], x=Cell[ind]) """
     else:
         # Initialize empty sacc file
         s = sacc.Sacc()
@@ -2257,6 +2260,54 @@ def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_
     plt.close()
     return()
 
+#########################
+### Covariance matrix ###
+#########################
+def Covariance_Plot(s, savefig=False):
+    """
+    Plots the covariance and correlation matrices for a given sacc object.
+
+    Parameters:
+    - s (sacc.Sacc): The sacc object containing the covariance matrix.
+    - savefig (bool, optional): Whether to save the figures as PDF files. Default is False.
+
+    Returns:
+    - None
+
+    Example usage:
+    >>> Covariance_Plot(s, savefig=True)
+    """
+
+    covmat = s.covariance.covmat
+
+    # Plot the covariance matrix
+    """
+    plt.figure(figsize=(6, 6))
+    plt.imshow(covmat)
+    plt.colorbar()
+    plt.savefig('/path/to/save/covmat.pdf', dpi=300, bbox_inches='tight')
+    plt.show()
+    plt.close()
+    """
+
+    # Plot the correlation matrix
+    plt.figure(figsize=(6, 6))
+    plt.imshow(np.corrcoef(covmat))
+    # Plot the colorbar with a similiar height than the matrix, colorbar goes from -1 to 1
+    cbar = plt.colorbar(shrink=0.85, label='Correlation')
+    # Set the font size for the tick labels
+    cbar.ax.tick_params(labelsize=14)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    if savefig:
+        print('>> Saving figure ...')
+        plt.savefig('/path/to/save/corrmat.pdf', dpi=300, bbox_inches='tight')
+    plt.show()
+    plt.close()
+
+    return(0)
+
+
 ################################
 ###  Null tests  ###
 ################################
@@ -2457,6 +2508,52 @@ def Gammat2pt_NullTest_plot(fname, save_fig=False, savepath='/pscratch/sd/d/davi
     plt.show()
     plt.close()
     return()
+
+#########################
+### Data vector check ###
+#########################
+
+def DataVector_Check(fname):
+    # Read the sacc with the data vector
+    s = sacc.Sacc.load_fits(fname)
+    # Plot the redshift distribution
+    print('>> Plotting redshift distribution ...')
+    RedshiftDistr_plot(sacc = s,
+                        label = [None],
+                        savepath = None)
+    # Plot the shear signal compared with the literature
+    print('>> Plotting shear signal ...')
+    Shear2pt_plot(fname = [fname],
+                    labels = ['This work'],
+                    add_individual = True,
+                    add_combined = False,
+                    add_literature=True,
+                    add_Hikage_sacc=False,
+                    theory_fname=None,
+                    just_auto = False,
+                    save_fig=False)
+
+    # Plot the clustering signal compared with the literature
+    print('>> Plotting clustering signal ...')
+    Clustering2pt_plot(fname = [fname],
+                        labels = ['This work'],
+                        add_individual = True,
+                        add_combined = False,
+                        add_literature = True,
+                        show_residual = True,
+                        save_fig = False)
+    # Plot the gglensing signal
+    print('>> Plotting gglensing signal ...')
+    Gammat2pt_plot(fname = [fname],
+                    labels = ['This work'],
+                    add_individual = True,
+                    add_combined = False,
+                    theory_fname = None,
+                    save_fig=False)
+    # Plot the covariance matrix
+    print('>> Plotting covariance matrix ...')
+    Covariance_Plot(s, savefig=False)
+    return(0)
 
 
 ########################################
