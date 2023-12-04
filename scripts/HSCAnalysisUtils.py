@@ -8,6 +8,11 @@ import os
 import sacc
 import datetime
 import time
+sys.path.append('/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/scripts/')
+import HSCMeasurementUtils as hmu
+
+# Define matplolib colors: black, purple, green, red
+colors = ['#000000', '#800080', '#008000', '#ff0000', "#E69F00", "#56B4E9", "#009E73", "#F0E442", '#800080', "#0072B2", "#CC79A7", "#D55E00"]
 
 # Matplotlib style
 plt.rcParams['figure.figsize'] = 8., 6.
@@ -30,21 +35,22 @@ plt.rcParams['xtick.major.pad'] = 6.
 plt.rcParams['xtick.minor.pad'] = 6.
 plt.rcParams['ytick.major.pad'] = 6.
 plt.rcParams['ytick.minor.pad'] = 6.
-plt.rcParams['xtick.major.size'] = 6. # major tick size in points
+plt.rcParams['xtick.major.size'] = 4. # major tick size in points
 plt.rcParams['xtick.minor.size'] = 3. # minor tick size in points
-plt.rcParams['ytick.major.size'] = 6. # major tick size in points
+plt.rcParams['ytick.major.size'] = 4. # major tick size in points
 plt.rcParams['ytick.minor.size'] = 3. # minor tick size in points
+# Thickness of the axes lines
+plt.rcParams['axes.linewidth'] = 1.5
+# Smaller font size for axes ticks labels
+plt.rcParams['xtick.labelsize'] = 13
 # plt.rcParams['text.usetex'] = True
 plt.rcParams['font.family'] =  'serif'
 # plt.rcParams['font.serif'] = 'Computer Modern Roman Bold'
 plt.rcParams['font.size'] = 18  
 
-colors = ["#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", '#800080', "#0072B2", "#CC79A7", "#D55E00"]
-
 ########################################
 ###   Galaxy clustering scale cuts   ###
 ########################################
-
 # Parametrization used in Nicola et al. https://arxiv.org/abs/1912.08209
 class HaloProfileHOD(ccl.halos.HaloProfileNFW):
     def __init__(self, c_M_relation,
@@ -137,7 +143,8 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
     ############################
     ###   Lens sample dndz   ###
     ############################
-    fname = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/combined/summary_statistics_fourier_ivw_HikageShearSC.sacc'
+    # Reading our lens sample dndz
+    fname = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab_HikageShearSC.sacc'
     s = sacc.Sacc.load_fits(fname)
     for i in np.arange(nbin_lens):
         # Add the appropriate tracer
@@ -152,7 +159,10 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
     ###   Mock HOD data   ###
     #########################
     # HSC 3x2pt re-analysis project multipoles (nside = 2048)
-    l_arr = np.array([149.5,249.5,349.5,499.5,699.5,899.5,1199.5,1599.5,1999.5])
+    ell, Cell = s.get_ell_cl("galaxy_density_cl", "lens_0", "lens_0", return_cov=False)
+    # l_arr = np.array([149.5,249.5,349.5,499.5,699.5,899.5,1199.5,1599.5,1999.5])
+    l_arr = np.copy(ell)
+    print('>> multipoles = ', l_arr)
     # Initialize data type
     galaxy_density_cl = sacc.standard_types.galaxy_density_cl
     # Considering auto- and cross- correlations
@@ -207,37 +217,12 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
     print('>> Introducing covariance matrix')
     S.add_covariance(cov)
     # Plotting the correlation matrix
-    ndata = cov.shape[0]
-    # Color map
-    cmap = 'seismic'
-    print()
-    pp_norm = np.zeros((ndata,ndata))
-    for i in range(ndata):
-        for j in range(ndata):
-            pp_norm[i][j] = cov[i][j]/ np.sqrt(cov[i][i]*cov[j][j])
-            
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-    im3 = ax.imshow(pp_norm, cmap=cmap, vmin=-1, vmax=1)
-    fig.colorbar(im3, orientation='vertical')
-
-    plt.xticks([], [])
-    ax.set_xticks([])
-    ax.set_xticks([], minor=True)
-
-    plt.yticks([], [])
-    ax.set_yticks([])
-    ax.set_yticks([], minor=True)
-
-    # plt.savefig('Correlation_matrix.png', dpi=2000)
-    plt.show()
-    plt.close()
+    Covariance_Plot(s = S, savefig=False)
     ################################
     ###   Save the data vector   ###
     ################################
     path_save = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/hod_clustering'
     S.save_fits(os.path.join(path_save,'summary_statistics_clustering_hod_rsd.fits'), overwrite=True)
-    
     # Maxmium Physical scales to generate data vectors
     # with scale cuts
     kmax_array = np.array([0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5])
