@@ -133,6 +133,7 @@ class Profile2ptHOD(ccl.halos.Profile2pt):
         return prof._fourier_variance(cosmo, k, M ,a, mass_def)
     
 def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
+    
     # Initialize empty sacc
     S = sacc.Sacc()
     # Metadata
@@ -151,6 +152,8 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
         # Add the appropriate tracer
         print(f"Adding lens dndz z-bin {i+1} ...")
         z = s.tracers[f'lens_{i}'].z
+        # Set first element on redshift array to zero
+        z[0] = 0.
         nz = s.tracers[f'lens_{i}'].nz
         S.add_tracer('NZ', f'lens_{i}', z, nz)
         plt.plot(z, nz, color=colors[i])
@@ -169,7 +172,8 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
     # Considering auto- and cross- correlations
     for i in np.arange(nbin_lens):
         for j in np.arange(nbin_lens):
-            if i >= j:
+            # just considering auto-correlations
+            if i == j:
                 # print(i,j)
                 # print(i)
                 nz_arr_1 = s.tracers[f'lens_{i}'].nz
@@ -216,6 +220,11 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
     for i in np.arange(len(data_types)):
         if data_types[i] != 'galaxy_density_cl':
             s.remove_selection(data_type=data_types[i])
+    # Remove galaxy clustering cross-correlations
+    for i in np.arange(nbin_lens):
+        for j in np.arange(nbin_lens):
+            if i > j:
+                s.remove_selection(data_type='galaxy_density_cl', tracers=(f'lens_{i}', f'lens_{j}'))
     print('>> Covariance matrix shape AFTER removing GGL and Shear')
     print(s.covariance.covmat.shape)
     print('>> Length of the signal: ', len(s.mean))
@@ -263,6 +272,19 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
     return(S)
 
 def zEffective_Comoving_Dist_Calculation(s, cosmo):
+    """
+    Calculate the effective redshift and comoving distance per tomographic bin.
+
+    Args:
+        s (object): The input object containing tracers.
+        cosmo (object): The cosmology object.
+
+    Returns:
+        tuple: A tuple containing two dictionaries:
+            - zeff_dict: A dictionary mapping the combination of tomographic bins to the effective redshift.
+            - chi_dict: A dictionary mapping the combination of tomographic bins to the comoving distance.
+    """
+    
     # Compute the effective redshift per tomographic bin
     zeff_dict = {}
     chi_dict = {}
@@ -301,6 +323,16 @@ def zEffective_Comoving_Dist_Calculation(s, cosmo):
     return(zeff_dict, chi_dict)
 
 def Kmax_to_Ellmax(kmax, chi_dict):
+    """
+    Convert kmax to ellmax given the comoving distance.
+
+    Parameters:
+    kmax (float): The maximum wavenumber (kmax) value.
+    chi_dict (dict): A dictionary containing comoving distances for different correlations.
+
+    Returns:
+    dict: A dictionary containing the maximum multipole values (ellmax) for different correlations.
+    """
     # Initialize maximum multipole dictionary
     ellmax_dict = {}
     nbin_lens = 4
@@ -312,5 +344,5 @@ def Kmax_to_Ellmax(kmax, chi_dict):
                 # transform from kmax to ellmax given the comoving distance
                 ellmax_dict[f'{i}_{j}'] = kmax * chi_max
                 print(f'ell_max = {int(kmax * chi_max)}')
-    return(ellmax_dict)
+    return ellmax_dict
 

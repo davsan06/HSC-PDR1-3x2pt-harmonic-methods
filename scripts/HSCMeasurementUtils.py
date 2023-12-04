@@ -2631,20 +2631,24 @@ def Covmat(sacc_fname,probe):
     nbins_src = 4
     nbins_lens = 4
     s = sacc.Sacc.load_fits(sacc_fname)
-    # Remove not used probes
-    s.remove_selection(data_type='galaxy_shearDensity_cl_b')
-    s.remove_selection(data_type='galaxy_shear_cl_bb')
-    s.remove_selection(data_type='galaxy_shear_cl_be')
-    s.remove_selection(data_type='galaxy_shear_cl_eb')
-    if probe == 'galaxy_shear_cl_ee':
-        s.remove_selection(data_type='galaxy_density_cl')
-        s.remove_selection(data_type='galaxy_shearDensity_cl_e')
-    elif probe == 'galaxy_density_cl':
-        s.remove_selection(data_type='galaxy_shear_cl_ee')
-        s.remove_selection(data_type='galaxy_shearDensity_cl_e')
-    elif probe == 'galaxy_shearDensity_cl_e':
-        s.remove_selection(data_type='galaxy_shear_cl_ee')
-        s.remove_selection(data_type='galaxy_density_cl')
+
+    # Get a list of all the data types in the data vector
+    data_types = s.get_data_types()
+    # Remove from the list the element probe
+    data_types.remove(probe)
+    # Iterate over the list of data types and remove them from the data vector
+    for dt in data_types:
+        print(f'Removing {dt} from data vector')
+        s.remove_selection(dt)
+    
+    # Remove galaxy clustering cross-correlations
+    print('Removing galaxy clustering cross-correlations')
+    for i in np.arange(4):
+        for j in np.arange(4):
+            if i > j:
+                print(f'Removing galaxy clustering cross-correlation ({i},{j})')
+                s.remove_selection(data_type='galaxy_density_cl', tracers=(f'lens_{i}', f'source_{j}'))
+
     # Extract covariance
     cov = s.covariance.covmat
     return(cov)
