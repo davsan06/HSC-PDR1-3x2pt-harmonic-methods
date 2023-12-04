@@ -2277,19 +2277,16 @@ def Covariance_Plot(s, savefig=False):
     Example usage:
     >>> Covariance_Plot(s, savefig=True)
     """
-
     covmat = s.covariance.covmat
-
     # Plot the covariance matrix
     """
     plt.figure(figsize=(6, 6))
     plt.imshow(covmat)
     plt.colorbar()
-    plt.savefig('/path/to/save/covmat.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig('/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/covariance/covmat.pdf', dpi=300, bbox_inches='tight')
     plt.show()
     plt.close()
     """
-
     # Plot the correlation matrix
     plt.figure(figsize=(6, 6))
     plt.imshow(np.corrcoef(covmat))
@@ -2301,7 +2298,7 @@ def Covariance_Plot(s, savefig=False):
     plt.yticks(fontsize=14)
     if savefig:
         print('>> Saving figure ...')
-        plt.savefig('/path/to/save/corrmat.pdf', dpi=300, bbox_inches='tight')
+        plt.savefig('/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/covariance/corrmat.pdf', dpi=300, bbox_inches='tight')
     plt.show()
     plt.close()
 
