@@ -1,5 +1,3 @@
-from cgitb import text
-from wsgiref.util import shift_path_info
 import sacc
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,8 +5,6 @@ import os
 import h5py
 import healpy as hp
 import seaborn as sns
-
-
 
 # Define matplolib colors: black, purple, green, red
 colors = ['#000000', '#800080', '#008000', '#ff0000', "#E69F00", "#56B4E9", "#009E73", "#F0E442", '#800080', "#0072B2", "#CC79A7", "#D55E00"]
@@ -959,6 +955,50 @@ def ApplyHikageShearCuts(sacc_list):
             continue
     return()
 
+def ApplyGCandGGLCuts(sacc_list):
+    """
+    Apply scale cuts for galaxy clustering and galaxy-galaxy lensing to the given list of Sacc files.
+
+    Parameters:
+    sacc_list (list): A list of Sacc file paths.
+
+    Returns:
+    None
+    """
+    # Scale cuts from HSC PDR1 galaxy clustering analysis
+    lmax = np.array([242.0, 275.0, 509.0, 669.0])
+
+    text_to_add = 'DESC_GCandGGL_SC'
+    for sacc_fname in sacc_list:
+        if os.path.exists(sacc_fname):
+            # New filename
+            root, extension = os.path.splitext(sacc_fname)
+            sacc_fname_save = f"{root}_{text_to_add}{extension}"
+            print(f'-{sacc_fname_save}')
+            # Read sacc
+            s = sacc.Sacc.load_fits(sacc_fname)
+            # Apply scale cuts  
+            print('Number of data points before cuts: ', len(s.mean))
+            print('Shape of the covariance before cuts: ', s.covariance.covmat.shape)
+            # Apply cuts for the galaxy clustering (just auto-correlations)
+            for i in np.arange(4):
+                s.remove_selection(data_type='galaxy_density_cl', tracers=(f'lens_{i}',f'lens_{i}'), ell__gt=lmax[i])                        
+            print('Number of data points after Galaxy Clustering cuts: ', len(s.mean))
+            print('Shape of the covariance after cuts: ', s.covariance.covmat.shape)
+            # First, index is source, second is lens
+            for i in np.arange(4):
+                for j in np.arange(4):
+                    s.remove_selection(data_type='galaxy_shearDensity_cl_e', tracers=(f'source_{i}',f'lens_{j}'), ell__gt=lmax[j])
+            print('Number of data points after GGLensing cuts: ', len(s.mean))
+            print('Shape of the covariance after GGLensing cuts: ', s.covariance.covmat.shape)
+            # Save sacc
+            print('>> >> Saving ...')
+            s.save_fits(sacc_fname_save, overwrite=True)
+        else:
+            print('>> File does not exist')
+            continue
+    return()
+
 def ApplyHamanaShearCuts(sacc_list):
     """
     Apply Hamana shear cuts to the given list of sacc files.
@@ -1001,7 +1041,7 @@ def ApplyHamanaShearCuts(sacc_list):
             continue
     return s
     
-def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_save, label, pz_method = 'pz_mz_eab', shear_cuts=True):
+def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_save, label, pz_method = 'pz_mz_eab', shear_cuts=True, clustering_cuts=True):
     # combmethod = 'ivw' or 'aw'
     print('<< Combined TXPipe data vector generation >>')
     # path_to_save = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw'
@@ -1010,12 +1050,18 @@ def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_sav
         path_aux = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/no-dndz'
         fname_all = os.path.join(path_aux, 'summary_statistics_fourier.sacc')
         s = sacc.Sacc.load_fits(fname_all)
-        """ for i in np.arange(4):
+        """ # Copy the covariance
+        covmat = s.covariance
+        # Remove covariance from original sacc to avoid overwriting issues
+        s.covariance = None
+        for i in np.arange(4):
             for j in np.arange(4):
                 if i >= j:
                     ell, Cell = s.get_ell_cl('galaxy_density_cl', f'lens_{i}', f'lens_{j}', return_cov=False)
                     # Remove shot noise from clustering signal
                     noise = np.array(s.get_tag("n_ell", data_type="galaxy_density_cl", tracers=(f"lens_{i}",f"lens_{j}")))
+                    # Remove the data point from the sacc
+                    s.remove_selection(data_type='galaxy_density_cl', tracers=(f'lens_{i}', f'lens_{j}'))
                     # if all the elements in noise are None, continue and do not remove noise
                     if np.all(noise == None):
                         pass
@@ -1026,7 +1072,9 @@ def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_sav
                         Cell = Cell - noise
                         # Add to the IVW data vector
                         for  ind in np.arange(len(Cell)):
-                            s.add_ell_cl('galaxy_density_cl', f'lens_{i}', f'lens_{j}', ell=ell[ind], x=Cell[ind]) """
+                            s.add_ell_cl('galaxy_density_cl', f'lens_{i}', f'lens_{j}', ell=ell[ind], x=Cell[ind])
+        # Write back the covariance matrix
+        s.covariance = covmat """
     else:
         # Initialize empty sacc file
         s = sacc.Sacc()
@@ -1084,14 +1132,36 @@ def Generate_TXPipe_CombMeas_Cells(sacc_list, meta_list, combmethod, path_to_sav
         if shear_cuts:
             print('>> Applying Hikage et al. shear cuts (300 < ell < 1900)')
             ApplyHikageShearCuts(sacc_list = [os.path.join(path_to_save, f'summary_statistics_fourier_all_{label}_{pz_method}.sacc')])
-        
-    if shear_cuts:
-        print('>> Applying Hikage et al. shear cuts (300 < ell < 1900)')
-        # Add to individual field sacc, IVW and AW measurements
-        sacc_list = np.append(sacc_list, os.path.join(path_to_save, f'summary_statistics_fourier_ivw_{label}.sacc'))
-        sacc_list = np.append(sacc_list, os.path.join(path_to_save, f'summary_statistics_fourier_aw_{label}.sacc'))
-        # Application
-        ApplyHikageShearCuts(sacc_list = sacc_list)
+        if clustering_cuts:
+            filename = os.path.join(path_to_save, f'summary_statistics_fourier_all_{label}_{pz_method}.sacc')
+            if shear_cuts:
+                # If we have previously applied shear cuts, we need to apply the cuts to the new file
+                filename = os.path.join(path_to_save, f'summary_statistics_fourier_all_{label}_{pz_method}_HikageShearSC.sacc')
+            print('>> Applying galaxy clustering and galaxy-galaxy lensing cuts up to kmax = 0.15 1 / Mpc')
+            ApplyGCandGGLCuts(sacc_list = [filename])
+    # If sacc_list is not an empty list, we have to apply the cuts to the individual fields
+    # Check if sacc_list is not empty
+    if len(sacc_list) != 0:
+        print('>> Applying cuts to individual fields')
+        if shear_cuts:
+            print('>> Applying Hikage et al. shear cuts (300 < ell < 1900)')
+            # Add to individual field sacc, IVW and AW measurements
+            sacc_list = np.append(sacc_list, os.path.join(path_to_save, f'summary_statistics_fourier_ivw_{label}.sacc'))
+            sacc_list = np.append(sacc_list, os.path.join(path_to_save, f'summary_statistics_fourier_aw_{label}.sacc'))
+            # Application
+            ApplyHikageShearCuts(sacc_list = sacc_list)
+        if clustering_cuts:
+            print('>> Applying galaxy clustering and galaxy-galaxy lensing cuts up to kmax = 0.15 1 / Mpc')
+            if shear_cuts:
+                # Add to individual field sacc, IVW and AW measurements
+                sacc_list = np.append(sacc_list, os.path.join(path_to_save, f'summary_statistics_fourier_ivw_{label}_HikageShearSC.sacc'))
+                sacc_list = np.append(sacc_list, os.path.join(path_to_save, f'summary_statistics_fourier_aw_{label}_HikageShearSC.sacc'))
+            else:
+                # Add to individual field sacc, IVW and AW measurements
+                sacc_list = np.append(sacc_list, os.path.join(path_to_save, f'summary_statistics_fourier_ivw_{label}.sacc'))
+                sacc_list = np.append(sacc_list, os.path.join(path_to_save, f'summary_statistics_fourier_aw_{label}.sacc'))
+            # Application
+            ApplyGCandGGLCuts(sacc_list = sacc_list)
     return(s)
 
 def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
@@ -1123,7 +1193,7 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
         fname = '/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw/summary_statistics_fourier_aw.sacc'
     elif combmethod == 'all':
         print('>> Reading ALL-FIELDS measurement')
-        fname = ('/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/outputs_all/summary_statistics_fourier.sacc')
+        fname = ('/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab.sacc')
     else:
         print('Combination method does not exist!')
     # Read sacc
@@ -1131,11 +1201,6 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
     # Extract Cls
     if probe == 'galaxy_shear_cl_ee':
         ell, Cell, cov = s.get_ell_cl(probe, f'source_{i}', f'source_{j}', return_cov=True)
-        """ if combmethod == 'all':
-            # Removing noise
-            print('>> Shear Cells - Removing noise')
-            nell = s.get_tag('n_ell', 'galaxy_shear_cl_ee', (f'source_{i}',f'source_{j}'))
-            Cell = Cell - nell """
     elif probe == 'galaxy_density_cl':
         ell, Cell, cov = s.get_ell_cl(probe, f'lens_{i}', f'lens_{j}', return_cov=True)
     elif probe == 'galaxy_shearDensity_cl_e':
@@ -2638,7 +2703,7 @@ def Covmat(sacc_fname,probe):
     data_types.remove(probe)
     # Iterate over the list of data types and remove them from the data vector
     for dt in data_types:
-        print(f'Removing {dt} from data vector')
+        # print(f'Removing {dt} from data vector')
         s.remove_selection(dt)
     
     # Remove galaxy clustering cross-correlations
@@ -2646,7 +2711,7 @@ def Covmat(sacc_fname,probe):
     for i in np.arange(4):
         for j in np.arange(4):
             if i > j:
-                print(f'Removing galaxy clustering cross-correlation ({i},{j})')
+                # print(f'Removing galaxy clustering cross-correlation ({i},{j})')
                 s.remove_selection(data_type='galaxy_density_cl', tracers=(f'lens_{i}', f'source_{j}'))
 
     # Extract covariance
