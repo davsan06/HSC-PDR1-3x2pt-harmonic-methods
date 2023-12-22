@@ -1,6 +1,8 @@
 # Use desc-python-bleed to avoid Latex issues
 import os
 import sys
+
+from numpy.lib.npyio import save
 sys.path.insert(0, '/global/homes/d/davidsan/ChainConsumer')
 from chainconsumer import ChainConsumer
 import numpy as np
@@ -12,12 +14,12 @@ import scipy.stats as stats
 from numpy.random import normal, uniform
 from scipy.special import ndtri
 
-# Matplotlib formatting
-# Matplotlib settings
-colors = ["#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
+# Define matplolib colors: black, purple, green, red
+colors = ['#000000', '#800080', '#008000', '#ff0000', "#E69F00", "#56B4E9", "#009E73", "#F0E442", '#800080', "#0072B2", "#CC79A7", "#D55E00"]
 
-plt.rcParams['figure.figsize'] = 3., 3.
-plt.rcParams['figure.dpi'] = 300
+# Matplotlib style
+plt.rcParams['figure.figsize'] = 8., 6.
+plt.rcParams['figure.dpi'] = 100
 plt.rcParams['figure.subplot.left'] = 0.125
 plt.rcParams['figure.subplot.right'] = 0.9
 plt.rcParams['figure.subplot.bottom'] = 0.125
@@ -30,22 +32,24 @@ plt.rcParams['ytick.left'] = True
 plt.rcParams['ytick.right'] = True
 plt.rcParams['xtick.direction'] = 'in'
 plt.rcParams['ytick.direction'] = 'in'
-plt.rcParams['xtick.labelsize'] = 12
-plt.rcParams['ytick.labelsize'] = 12
+plt.rcParams['xtick.labelsize'] = 18
+plt.rcParams['ytick.labelsize'] = 18
 plt.rcParams['xtick.major.pad'] = 6.
 plt.rcParams['xtick.minor.pad'] = 6.
 plt.rcParams['ytick.major.pad'] = 6.
 plt.rcParams['ytick.minor.pad'] = 6.
-plt.rcParams['xtick.major.size'] = 6. # major tick size in points
+plt.rcParams['xtick.major.size'] = 4. # major tick size in points
 plt.rcParams['xtick.minor.size'] = 3. # minor tick size in points
-plt.rcParams['ytick.major.size'] = 6. # major tick size in points
+plt.rcParams['ytick.major.size'] = 4. # major tick size in points
 plt.rcParams['ytick.minor.size'] = 3. # minor tick size in points
+# Thickness of the axes lines
+plt.rcParams['axes.linewidth'] = 1.5
+# Smaller font size for axes ticks labels
+plt.rcParams['xtick.labelsize'] = 13
 # plt.rcParams['text.usetex'] = True
 plt.rcParams['font.family'] =  'serif'
-# plt.rcParams['font.family'] =  'cmr10'
-plt.rcParams['font.size'] = 8 
-# axes linewidth
-plt.rcParams['axes.linewidth'] = 1.2 #set the value globally
+# plt.rcParams['font.serif'] = 'Computer Modern Roman Bold'
+plt.rcParams['font.size'] = 18  
 
 # Chainconsumer smooth parameter
 # kde = 3.0
@@ -115,6 +119,9 @@ parameters_dict_desc = {# Cosmology parameters
                         'cosmological_parameters--log10as_hamana':'$\ln(10^{9} A_s)$',
                         'cosmological_parameters--n_s':'$n_{s}$',
                         'cosmological_parameters--sigma_8':'$\sigma_8$',
+                        'COSMOLOGICAL_PARAMETERS--SIGMA_8':'$\sigma_8$',
+                        'COSMOLOGICAL_PARAMETERS--SIGMA_12':'$\sigma_12$',
+                        'COSMOLOGICAL_PARAMETERS--S_8':'$S_8$',
                         # Lens photo-z uncert.
                         'firecrown_two_point--lens_0_delta_z':'$\Delta z^{lens}_1$',
                         'firecrown_two_point--lens_1_delta_z':'$\Delta z^{lens}_2$',
@@ -129,8 +136,6 @@ parameters_dict_desc = {# Cosmology parameters
                         'firecrown_two_point--lens_1_bias':'$b^{lens}_2$',
                         'firecrown_two_point--lens_2_bias':'$b^{lens}_3$',
                         'firecrown_two_point--lens_3_bias':'$b^{lens}_4$',
-                        'COSMOLOGICAL_PARAMETERS--SIGMA_8':'$\sigma_8$',
-                        'COSMOLOGICAL_PARAMETERS--SIGMA_12':'$\sigma_12$',
                         # Photo-z WL
                         'firecrown_two_point--source_0_delta_z':'$\Delta z^{source}_1$',
                         'firecrown_two_point--source_1_delta_z':'$\Delta z^{source}_2$',
@@ -362,7 +367,38 @@ parameters_mn_eqwpost_hamana = [ '$\Omega_{cdm}$',
 ########################################
 ###         Initialize chains        ###
 ########################################
+def generate_hsc_chain(fname, chain_to_add):
+    """
+    Generate an HSC chainconsumer chain from a given file.
+
+    Args:
+        fname (str): Path to the txt chain file.
+        chain_to_add (chainconsumer.Chain): The chainconsumer chain to add the HSC chain to.
+
+    Returns:
+        None
+
+    Technical Details:
+        This function loads the data from the specified file and extracts the weights and posterior values.
+        It then adds the data to the existing chainconsumer chain, along with the specified parameters, weights,
+        posterior, and kde values. The name of the chain is set to 'HSC Y1 1x2pt (Hikage et al.)'.
+    """
+    
+    # HSC shear
+    data_hsc = np.loadtxt(fname)
+    weights_hsc = data_hsc[:, 0]
+    posterior_hsc = data_hsc[:, 1]
+    
+    # Add to already initialized chain
+    chain_to_add.add_chain(data_hsc, parameters=parameters_hsc,
+                           weights=weights_hsc,
+                           posterior=posterior_hsc,
+                           kde=kde,
+                           name='HSC Y1 1x2pt (Hikage et al.)')  # HSC shear Chain
+    
+    return()
 def generate_hsc_chain(fname,chain_to_add):
+    
     # fname - path to txt chain
     # Output - chainconsumer chain
     
@@ -416,7 +452,7 @@ def cosmosis_header(fname):
     # Initialize empty list
     parameters_latex = list()
     # Obtain corresponding latex labels
-    if 'hikage' in fname or 'txpipe' in fname:
+    if 'hikage' in fname or 'txpipe' in fname or 'output' in fname:
         for par in parameters_cosmosis:
             if par in parameters_dict_desc.keys():
                 # print(parameters_dict_desc[par])
@@ -490,7 +526,15 @@ def S8(sample,parameters,alpha=0.5):
     
     return(sample,parameters)
 
-def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add_hsc_hamana=False,add_nicola=False,add_prior=True,S8_alpha=0.5,show_auxplots=False):
+def generate_cosmosis_chain(fname_list,
+                            chain_label_list,
+                            add_hsc_hikage = False,
+                            add_hsc_hamana = False,
+                            add_nicola = False,
+                            add_prior = True,
+                            S8_alpha = 0.5,
+                            show_auxplots = False,
+                            burnin = True):
     # fname - path to txt chain (could be a list of chains to compare)
     # add_hsc add comparison with HSC contours
 
@@ -761,7 +805,7 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
                 weigths = sample[:,parameters.index('$weight$')]
                 # Burn-in cut
                 # Find the first index where the weight is larger than 1e-6
-                ind_burnin = np.argmax(weigths>1e-6)
+                ind_burnin = np.argmax(weigths>1e-4)
                 print(f'>> Burn-in cut at index {ind_burnin}')
                 if show_auxplots == True:
                     # Plot the weights
@@ -770,18 +814,22 @@ def generate_cosmosis_chain(fname_list,chain_label_list,add_hsc_hikage=False,add
                     plt.axvline(x=ind_burnin,linestyle='--',color='r')
                     plt.show()
                     plt.close()
-                # Apply burn-in cut
-                print(f'>> Chain size before burn-in cut: {sample.shape}')
-                sample = sample[ind_burnin:,:]
-                print(f'>> Chain size after burn-in cut: {sample.shape}')
+                if burnin == True:
+                    # Apply burn-in cut
+                    print(f'>> Chain size before burn-in cut: {sample.shape}')
+                    sample = sample[ind_burnin:,:]
+                    print(f'>> Chain size after burn-in cut: {sample.shape}')
                 # Extract the posterior
                 posterior = sample[:,parameters.index('$post$')] 
                 weigths = sample[:,parameters.index('$weight$')]
                 # Sampling Om_c*h^2 and Om_b*h^2
                 sample,parameters=omega_m(sample=sample,parameters=parameters)
-                # Computing S_8
-                sample,parameters=S8(sample=sample,parameters=parameters,alpha=S8_alpha)              
-                # S8_txpipe = sample[:,parameters.index('$S_8$')]  
+                if '$S_8$' not in parameters:
+                    print('>> Computing S8')
+                    # Computing S_8
+                    sample,parameters=S8(sample=sample,parameters=parameters,alpha=S8_alpha) 
+                else:
+                    print('>> S8 already computed')  
 
             if show_auxplots == True:
                 # Histograms
@@ -895,12 +943,13 @@ def plot_Omegam_sigma8_S8(chain,labelpng,S8_alpha,savepath='/pscratch/sd/d/david
                              figsize=(3,3))
     # Add text in the last panel with the S8 alpha value
     # fig.text(0.2, 0.8, r'$\alpha$ = '+str(np.round(S8_alpha, 2)), fontsize=8)
-    plt.savefig(os.path.join(savepath,f'Om_sigma8_S8_{labelpng}.png'),
-               dpi=300,
-               bbox_inches='tight')
-    plt.savefig(os.path.join(savepath,f'Om_sigma8_S8_{labelpng}.pdf'),
-               dpi=300,
-               bbox_inches='tight')
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'Om_sigma8_S8_{labelpng}.png'),
+                   dpi=300,
+                   bbox_inches='tight')
+        plt.savefig(os.path.join(savepath,f'Om_sigma8_S8_{labelpng}.pdf'),
+                   dpi=300,
+                   bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
@@ -909,10 +958,14 @@ def plot_Omegam_sigma8_lnAs(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2
     fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$', '$\ln(10^{10} A_s)$'], 
                              extents=extents_dict,
                              watermark=r"Preliminary",
-                             figsize=(3,3))
-    plt.savefig(os.path.join(savepath,f'Om_sigma8_lnAs_{labelpng}.png'),
-               dpi=300,
-               bbox_inches='tight')
+                             figsize=(3,3)) 
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'Om_sigma8_lnAs_{labelpng}.png'),
+                   dpi=300,
+                   bbox_inches='tight')
+        plt.savefig(os.path.join(savepath,f'Om_sigma8_lnAs_{labelpng}.pdf'),
+                   dpi=300,
+                   bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
@@ -935,12 +988,13 @@ def plot_Omegam_sigma8(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HS
     fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$'], 
                              extents=extents_dict,
                              watermark="Preliminary")
-    plt.savefig(os.path.join(savepath,f'Om_sigma8_{labelpng}.png'),
-               dpi=300,
-               bbox_inches='tight')
-    plt.savefig(os.path.join(savepath,f'Om_sigma8_{labelpng}.pdf'),
-               dpi=300,
-               bbox_inches='tight')
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'Om_sigma8_{labelpng}.png'),
+                dpi=300,
+                bbox_inches='tight')
+        plt.savefig(os.path.join(savepath,f'Om_sigma8_{labelpng}.pdf'),
+                dpi=300,
+                bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
