@@ -534,7 +534,8 @@ def generate_cosmosis_chain(fname_list,
                             add_prior = True,
                             S8_alpha = 0.5,
                             show_auxplots = False,
-                            burnin = True):
+                            burnin = True, 
+                            trace_plots = False):
     # fname - path to txt chain (could be a list of chains to compare)
     # add_hsc add comparison with HSC contours
 
@@ -805,7 +806,7 @@ def generate_cosmosis_chain(fname_list,
                 weigths = sample[:,parameters.index('$weight$')]
                 # Burn-in cut
                 # Find the first index where the weight is larger than 1e-6
-                ind_burnin = np.argmax(weigths>1e-4)
+                ind_burnin = np.argmax(weigths>1e-5)
                 print(f'>> Burn-in cut at index {ind_burnin}')
                 if show_auxplots == True:
                     # Plot the weights
@@ -830,6 +831,13 @@ def generate_cosmosis_chain(fname_list,
                     sample,parameters=S8(sample=sample,parameters=parameters,alpha=S8_alpha) 
                 else:
                     print('>> S8 already computed')  
+
+                if trace_plots == True:
+                    for par_trace in ['$\Omega_{cdm} \cdot h^2$','$\Omega_b \cdot h^2$','$\Omega_m$','$\sigma_8$','$S_8$']:
+                        plt.plot(np.arange(len(sample[:,parameters.index(par_trace)])),sample[:,parameters.index(par_trace)])
+                        plt.title(par_trace)
+                        plt.show()
+                        plt.close()
 
             if show_auxplots == True:
                 # Histograms
