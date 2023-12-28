@@ -122,6 +122,7 @@ parameters_dict_desc = {# Cosmology parameters
                         'COSMOLOGICAL_PARAMETERS--SIGMA_8':'$\sigma_8$',
                         'COSMOLOGICAL_PARAMETERS--SIGMA_12':'$\sigma_12$',
                         'COSMOLOGICAL_PARAMETERS--S_8':'$S_8$',
+                        'COSMOLOGICAL_PARAMETERS--OMEGA_M':'$\Omega_m$',
                         # Lens photo-z uncert.
                         'firecrown_two_point--lens_0_delta_z':'$\Delta z^{lens}_1$',
                         'firecrown_two_point--lens_1_delta_z':'$\Delta z^{lens}_2$',
@@ -823,8 +824,12 @@ def generate_cosmosis_chain(fname_list,
                 # Extract the posterior
                 posterior = sample[:,parameters.index('$post$')] 
                 weigths = sample[:,parameters.index('$weight$')]
-                # Sampling Om_c*h^2 and Om_b*h^2
-                sample,parameters=omega_m(sample=sample,parameters=parameters)
+                if '$\Omega_m$' in parameters:
+                    print('>> Omega_m already computed during sampling')
+                else:
+                    print('>> Computing Omega_m from sampled Om_c*h^2 and Om_b*h^2')
+                    # Sampling Om_c*h^2 and Om_b*h^2
+                    sample,parameters=omega_m(sample=sample,parameters=parameters)
                 if '$S_8$' not in parameters:
                     print('>> Computing S8')
                     # Computing S_8
