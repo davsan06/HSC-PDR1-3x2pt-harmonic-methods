@@ -31,6 +31,6 @@ Fiducial data vector:
 
 # Acknowledgments
 
-![LSST Corporation logo](https://www.lsstcorporation.org/sites/default/files/LSSTC_Logo.png)
+![LSST Corporation logo](/figures/LSST Corporation Logo.jpg)
 
 We are grateful for the financial support provided by the LSST Corporation for their support through the 2021-02 Enabling Science Program. This funding facilitated the successful execution of our research project and provided DSC the opportunity to visit JS at Fermilab facility. The collaborative environment at Fermilab and the insightful interactions with researchers at the Kavli Institute for Cosmological Physics (KIPC) at the University of Chicago enriched our work and expanded our perspectives. The combined support from the LSST Corporation, Fermilab, and KIPC UChicago has been instrumental in the accomplishments presented in this paper.
