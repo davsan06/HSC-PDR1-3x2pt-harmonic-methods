@@ -12,12 +12,13 @@ In NERSC you can find the ini-files in yaml format and the derived data products
 
 ### Harmonic space
 * TXPipe (This work)
-
-Fiducial data vector: 
+- Fiducial data vector ´/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab_HikageShearSC_DESC_GCandGGL_SC.sacc´
 
 * Nicola et al.
 
 * Hikage et al. (HSC official analysis)
+- Raw txt (as released by HSC) ´/data/harmonic/hikage/raw/band_powers.dat´
+- Sacc ´/data/harmonic/hikage/sacc/summary_statistics_fourier_Hik_shear_Cells_Hik_covmat_Hik_dndz.sacc´
 
 ### Configuration space
 * TXPipe - Longley-Philips and Chang paper
