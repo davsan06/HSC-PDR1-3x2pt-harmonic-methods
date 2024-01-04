@@ -118,6 +118,7 @@ parameters_dict_desc = {# Cosmology parameters
                         'cosmological_parameters--log10as':'$\ln(10^{10} A_s)$',
                         'cosmological_parameters--log10as_hamana':'$\ln(10^{9} A_s)$',
                         'cosmological_parameters--n_s':'$n_{s}$',
+                        'cosmological_parameters--w':'w',
                         'cosmological_parameters--sigma_8':'$\sigma_8$',
                         'COSMOLOGICAL_PARAMETERS--SIGMA_8':'$\sigma_8$',
                         'COSMOLOGICAL_PARAMETERS--SIGMA_12':'$\sigma_12$',
@@ -206,6 +207,7 @@ extents_dict = {
                '$\ln(10^{10} A_s)$':[1.5,6.0],
                '$n_{s}$':[0.87,1.07],
                '$\sigma_8$':[0.45,1.6],
+               'w':[-3.0, -0.333],
                # Lens photo-z uncert.
                '$\Delta z^{lens}_1$':[-0.08,0.08],
                '$\Delta z^{lens}_2$':[-0.08,0.08],
@@ -323,6 +325,27 @@ parameters_mn_eqwpost = ['$\Omega_{cdm} \cdot h^2$',
                          '$like$',
                          '$post$'
                           ]
+
+parameters_mn_eqwpost_new = ['$\Omega_{cdm} \cdot h^2$',
+                             '$\Omega_b \cdot h^2$',
+                             '$h$', 
+                             '$\ln(10^{10} A_s)$',
+                             '$n_{s}$',
+                             '$\Delta z^{source}_1$',
+                             '$\Delta z^{source}_2$',
+                             '$\Delta z^{source}_3$',
+                             '$\Delta z^{source}_4$',
+                             'm',
+                             '$A_{IA}$',
+                             '$\eta$',
+                             '$\Omega_m$',
+                             '$\sigma_8$',
+                             '$S_8$',
+                             '$\Chi^2$',
+                             '$prior$',
+                             '$like$',
+                             '$post$'
+                              ]
 
 parameters_mn_eqwpost_no_syst = ['$\Omega_{cdm} \cdot h^2$',
                                  '$\Omega_b \cdot h^2$',
@@ -771,6 +794,7 @@ def generate_cosmosis_chain(fname_list,
                 sample = np.loadtxt(fname)
                 weigths = np.ones(sample.shape[0])
                 posterior = sample[:,-1]
+                # Extract the parameters
                 if 'hikage' in fname:
                     print('>> Hikage-like chain')
                     
@@ -791,11 +815,22 @@ def generate_cosmosis_chain(fname_list,
                 elif 'txpipe' in fname:
                     print('>> This work')
                     parameters = list(np.copy(parameters_mn_eqwpost))
-                    
-                # Sampling Om_c*h^2 and Om_b*h^2
-                sample,parameters=omega_m(sample=sample,parameters=parameters)
-                # Computing S_8
-                sample,parameters=S8(sample=sample,parameters=parameters,alpha=S8_alpha)
+                
+                else:
+                    print('>> Reading parameters')
+                    parameters = list(np.copy(parameters_mn_eqwpost_new))
+                
+                if '$\Omega_m$' in parameters:
+                    print('>> Omega_m already computed during sampling')
+                else: 
+                    # Sampling Om_c*h^2 and Om_b*h^2
+                    sample,parameters=omega_m(sample=sample,parameters=parameters)
+                if '$S_8$' not in parameters:
+                    print('>> Computing S8')
+                    # Computing S_8
+                    sample,parameters=S8(sample=sample,parameters=parameters,alpha=S8_alpha)
+                else:
+                    print('>> S8 already derived during sampling')
                 # print(sample,parameters)
             else:
                 print('>> Chain with weights')
@@ -885,7 +920,7 @@ def generate_cosmosis_chain(fname_list,
                 # linestyles=["-"]*len(fname_list),
                 # linewidths=[1.0]+[1.2]*len(fname_list),
                 shade=[False]+[False]*len(fname_list),
-                legend_kwargs={"fontsize": 5},#, "loc": "upper right"},
+                legend_kwargs={"fontsize": 8},#, "loc": "upper right"},
                 #legend_location=(0, 0),
                 watermark_text_kwargs={"alpha": 0.2,"weight": "bold"},
                 colors=colors,
@@ -953,7 +988,7 @@ def plot_Omegam_sigma8_S8(chain,labelpng,S8_alpha,savepath='/pscratch/sd/d/david
     fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$', '$S_8$'], 
                              extents=extents_dict,
                              watermark=r"Preliminary",
-                             figsize=(3,3))
+                             figsize=(5,5))
     # Add text in the last panel with the S8 alpha value
     # fig.text(0.2, 0.8, r'$\alpha$ = '+str(np.round(S8_alpha, 2)), fontsize=8)
     if savepath is not None:
@@ -961,6 +996,24 @@ def plot_Omegam_sigma8_S8(chain,labelpng,S8_alpha,savepath='/pscratch/sd/d/david
                    dpi=300,
                    bbox_inches='tight')
         plt.savefig(os.path.join(savepath,f'Om_sigma8_S8_{labelpng}.pdf'),
+                   dpi=300,
+                   bbox_inches='tight')
+    plt.show()
+    plt.close()
+    return(fig)
+
+def plot_Omegam_sigma8_S8_w(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
+    fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$', '$S_8$'. 'w'], 
+                             extents=extents_dict,
+                             watermark=r"Preliminary",
+                             figsize=(5,5))
+    # Add text in the last panel with the S8 alpha value
+    # fig.text(0.2, 0.8, r'$\alpha$ = '+str(np.round(S8_alpha, 2)), fontsize=8)
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'Om_sigma8_S8_w_{labelpng}.png'),
+                   dpi=300,
+                   bbox_inches='tight')
+        plt.savefig(os.path.join(savepath,f'Om_sigma8_S8_w_{labelpng}.pdf'),
                    dpi=300,
                    bbox_inches='tight')
     plt.show()
