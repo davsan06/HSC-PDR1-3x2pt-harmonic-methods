@@ -1003,7 +1003,7 @@ def plot_Omegam_sigma8_S8(chain,labelpng,S8_alpha,savepath='/pscratch/sd/d/david
     return(fig)
 
 def plot_Omegam_sigma8_S8_w(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
-    fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$', '$S_8$'. 'w'], 
+    fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$', '$S_8$', 'w'], 
                              extents=extents_dict,
                              watermark=r"Preliminary",
                              figsize=(5,5))
