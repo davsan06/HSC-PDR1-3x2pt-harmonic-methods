@@ -218,10 +218,10 @@ extents_dict = {
                '$\sigma z^{lens}_3$':[0.9,1.1],
                '$\sigma z^{lens}_4$':[0.9,1.1],
                # Lens galaxy bias 
-               '$b^{lens}_1$':[1.0,2.0],
-               '$b^{lens}_2$':[1.0,2.0],
-               '$b^{lens}_3$':[1.0,2.0],
-               '$b^{lens}_4$':[1.0,2.0],
+               '$b^{lens}_1$':[1.0,3.0],
+               '$b^{lens}_2$':[1.0,3.0],
+               '$b^{lens}_3$':[1.0,3.0],
+               '$b^{lens}_4$':[1.0,3.0],
                # Sources photo-z uncert.
                # '$\Delta z^{source}_1$':[-0.008,0.008],
                # '$\Delta z^{source}_2$':[-0.008,0.008],
