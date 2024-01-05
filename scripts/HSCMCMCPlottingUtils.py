@@ -842,13 +842,13 @@ def generate_cosmosis_chain(fname_list,
                 weigths = sample[:,parameters.index('$weight$')]
                 # Burn-in cut
                 # Find the first index where the weight is larger than 1e-6
-                ind_burnin = np.argmax(weigths>1e-5)
+                ind_burnin = np.argmax(weigths>1e-6)
                 print(f'>> Burn-in cut at index {ind_burnin}')
                 if show_auxplots == True:
                     # Plot the weights
                     plt.plot(np.arange(len(weigths)),weigths, color='k')
                     # Plot a dashed vertical line at that index
-                    plt.axvline(x=ind_burnin,linestyle='--',color='r')
+                    plt.axvline(x=ind_burnin, linestyle='--', color='r')
                     plt.show()
                     plt.close()
                 if burnin == True:
@@ -1187,9 +1187,13 @@ def plot_galbias_lens(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC
                              extents=extents_dict,
                              watermark="Preliminary",
                              figsize="column")
-    plt.savefig(os.path.join(savepath,f'delta_pz_lens_{labelpng}.png'),
-               dpi=300,
-               bbox_inches='tight')
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'galbias_lens_{labelpng}.png'),
+                   dpi=300,
+                   bbox_inches='tight')
+        plt.savefig(os.path.join(savepath,f'galbias_lens_{labelpng}.pdf'),
+                   dpi=300,
+                   bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
