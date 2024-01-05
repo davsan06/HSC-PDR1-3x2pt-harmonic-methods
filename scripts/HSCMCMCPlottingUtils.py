@@ -218,10 +218,10 @@ extents_dict = {
                '$\sigma z^{lens}_3$':[0.9,1.1],
                '$\sigma z^{lens}_4$':[0.9,1.1],
                # Lens galaxy bias 
-               '$b^{lens}_1$':[1.0,3.0],
-               '$b^{lens}_2$':[1.0,3.0],
-               '$b^{lens}_3$':[1.0,3.0],
-               '$b^{lens}_4$':[1.0,3.0],
+               '$b^{lens}_1$':[0.8,3.0],
+               '$b^{lens}_2$':[0.8,3.0],
+               '$b^{lens}_3$':[0.8,3.0],
+               '$b^{lens}_4$':[0.8,3.0],
                # Sources photo-z uncert.
                # '$\Delta z^{source}_1$':[-0.008,0.008],
                # '$\Delta z^{source}_2$':[-0.008,0.008],
@@ -918,7 +918,7 @@ def generate_cosmosis_chain(fname_list,
     # Config chain
     c.configure(flip=False,
                 # linestyles=["-"]*len(fname_list),
-                # linewidths=[1.0]+[1.2]*len(fname_list),
+                linewidths=[1.2]*len(fname_list),
                 shade=[False]+[False]*len(fname_list),
                 legend_kwargs={"fontsize": 8},#, "loc": "upper right"},
                 #legend_location=(0, 0),
@@ -1081,10 +1081,14 @@ def plot_cosmological(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC
     fig = chain.plotter.plot(parameters=['$\Omega_m$','$\sigma_8$','$\Omega_b \cdot h^2$','$\Omega_{cdm} \cdot h^2$','$n_{s}$','$h$'],
                              extents=extents_dict,
                              watermark="Preliminary",
-                             figsize=(3,3))
-    plt.savefig(os.path.join(savepath,f'cosmo_{labelpng}.png'),
-               dpi=300,
-               bbox_inches='tight')
+                             figsize=(8,8))
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'cosmo_{labelpng}.pdf'),
+                dpi=300,
+                bbox_inches='tight')
+        plt.savefig(os.path.join(savepath,f'cosmo_{labelpng}.png'),
+                dpi=300,
+                bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
@@ -1133,9 +1137,14 @@ def plot_pz_deltaz_lens(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-H
                              extents=extents_dict,
                              watermark="Preliminary",
                              figsize="column")
-    plt.savefig(os.path.join(savepath,f'delta_pz_lens_{labelpng}.png'),
-               dpi=300,
-               bbox_inches='tight')
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'delta_pz_lens_{labelpng}.png'),
+                dpi=300,
+                bbox_inches='tight')
+    
+        plt.savefig(os.path.join(savepath,f'delta_pz_lens_{labelpng}.pdf'),
+                    dpi=300,
+                    bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
@@ -1145,9 +1154,13 @@ def plot_pz_stretch_lens(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-
                              extents=extents_dict,
                              watermark="Preliminary",
                              figsize="column")
-    plt.savefig(os.path.join(savepath,f'stretch_pz_lens_{labelpng}.png'),
-               dpi=300,
-               bbox_inches='tight')
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'stretch_pz_lens_{labelpng}.png'),
+                    dpi=300,
+                    bbox_inches='tight')
+        plt.savefig(os.path.join(savepath,f'stretch_pz_lens_{labelpng}.pdf'),
+                    dpi=300,
+                    bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
@@ -1160,9 +1173,13 @@ def plot_pz_deltaz_source(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt
                              extents=extents_dict,
                              watermark="Preliminary",
                              figsize="column")
-    plt.savefig(os.path.join(savepath,f'delta_pz_source_{labelpng}.png'),
-               dpi=300,
-               bbox_inches='tight')
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'delta_pz_source_{labelpng}.png'),
+                dpi=300,
+                bbox_inches='tight')
+        plt.savefig(os.path.join(savepath,f'delta_pz_source_{labelpng}.pdf'),
+                dpi=300,
+                bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
@@ -1172,9 +1189,13 @@ def plot_pz_stretch_source(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2p
                              extents=extents_dict,
                              watermark="Preliminary",
                              figsize="column")
-    plt.savefig(os.path.join(savepath,f'stretch_pz_source_{labelpng}.png'),
-               dpi=300,
-               bbox_inches='tight')
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'stretch_pz_source_{labelpng}.png'),
+                dpi=300,
+                bbox_inches='tight')
+        plt.savefig(os.path.join(savepath,f'stretch_pz_source_{labelpng}.pdf'),
+                dpi=300,
+                bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
@@ -1204,18 +1225,20 @@ def plot_intrinsic_alignments(chain,labelpng,mode="lin",savepath='/pscratch/sd/d
         fig = chain.plotter.plot(parameters=['$A_{IA}$','$\eta$'],
                                  extents=extents_dict,
                                  watermark="Preliminary",
-                                 figsize=(3,3))
-        plt.savefig(os.path.join(savepath,f'nla-ia_{labelpng}.png'),
-                   dpi=300,
-                   bbox_inches='tight')
+                                 figsize=(6,6))
+        if savepath is not None:
+            plt.savefig(os.path.join(savepath,f'nla-ia_{labelpng}.png'),
+                       dpi=300,
+                       bbox_inches='tight')
     elif mode == "lin":
         fig = chain.plotter.plot(parameters=['$A_{IA,lin}$','$\\alpha_z$'],
                                  extents=extents_dict,
                                  watermark="Preliminary",
                                  figsize=(3,3))
-        plt.savefig(os.path.join(savepath,f'lin-ia_{labelpng}.png'),
-                   dpi=300,
-                   bbox_inches='tight')
+        if savepath is not None:
+            plt.savefig(os.path.join(savepath,f'lin-ia_{labelpng}.png'),
+                       dpi=300,
+                       bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
@@ -1228,9 +1251,10 @@ def plot_delta_m(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-
                              extents=extents_dict,
                              watermark="Preliminary",
                              figsize=(3,3))
-    plt.savefig(os.path.join(savepath,f'multiplicative_shear_bias_{labelpng}.png'),
-               dpi=300,
-               bbox_inches='tight')
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'delta_m_{labelpng}.png'),
+                   dpi=300,
+                   bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
@@ -1252,12 +1276,13 @@ def plot_full_shear_hikage(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2p
                              extents=extents_dict,
                              watermark="Preliminary",
                              figsize="GROW")
-    plt.savefig(os.path.join(savepath,f'full_shear_hikage_{labelpng}.png'),
-               dpi=300,
-               bbox_inches='tight')
-    plt.savefig(os.path.join(savepath,f'full_shear_hikage_{labelpng}.pdf'),
-               dpi=300,
-               bbox_inches='tight')
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'full_shear_hikage_{labelpng}.png'),
+                dpi=300,
+                bbox_inches='tight')
+        plt.savefig(os.path.join(savepath,f'full_shear_hikage_{labelpng}.pdf'),
+                dpi=300,
+                bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
