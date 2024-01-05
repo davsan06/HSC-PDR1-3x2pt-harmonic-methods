@@ -1179,7 +1179,7 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
     #  - err: error
     #  - cov: covariance matrix for the given probe and (i,j) correlation
     #####################################################################
-    # Read our IVW combined measuremtent
+    # Read our IVW combined measurement
     if 'ivw' in combmethod:
         print('>> Reading Inverse Variance Weighting combined measurements')
         if lens_sample == 's16a':
@@ -1253,16 +1253,18 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_all
                         continue
                 # log-log scale
                 axs[axind].set_xscale('log')
-                # scale cuts
-                axs[axind].axvline(300, ls='--', c='k', linewidth=0.5)
-                axs[axind].axvline(1900, ls='--', c='k', linewidth=0.5)
+                # scale cuts as shaded bands
                 axs[axind].axhline(0, ls='--', c='k', linewidth=0.5)
-                axs[axind].axvspan(xmin=50, xmax=300, color='grey', alpha=0.01)
-                axs[axind].axvspan(xmin=1900, xmax=6800, color='grey', alpha=0.01)
+                axs[axind].axvspan(xmin=50, xmax=300, color='grey', alpha=0.2)
+                axs[axind].axvspan(xmin=1900, xmax=6800, color='grey', alpha=0.2)
                 # x-lim range
                 axs[axind].set_xlim([90, 6144])
                 # z-bin pair
-                axs[axind].text(0.15, 0.85,f'({i + 1},{j + 1})', ha='center', va='center', transform=axs[axind].transAxes, fontsize=12)
+                axs[axind].text(0.85, 0.15,f'{i + 1},{j + 1}', 
+                                ha='center', va='center',
+                                transform=axs[axind].transAxes,
+                                bbox=dict(facecolor='white', edgecolor='black'),
+                                fontsize=12)
                 # y-lims
                 if i == 0:
                     axs[axind].set_ylim([-0.2, 0.6])
@@ -1272,7 +1274,7 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_all
                     axs[axind].set_ylim([-0.5, 2.2])
                 if i == 3:
                     axs[axind].set_ylim([-0.5, 2.7])
-                if j == 0:
+                if j == 0 and i == 3:
                     axs[axind].set_ylabel('$\mathcal{D}^{\kappa \kappa}_\ell [\\times 10^4]$')
                 if just_auto:
                     axs[axind].set_xlabel('multipole, $\ell$')
@@ -1514,10 +1516,16 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_all
                                           markersize=3.0, 
                                           capsize=2,
                                           label='This work (IVW)')
-                        
+                        # generate a mask to just consider ells within scale cuts 300 < ell_txp < 1900
+                        mask = (ell_txp > 300)*(ell_txp < 1900)
+                        # kepp Cells and covariances within scale cuts
+                        ell_txp = ell_txp[mask]
+                        Cell_txp = Cell_txp[mask]
+                        cov_txp = cov_txp[mask,:][:,mask]
+                        # compute S/N
                         snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                         # z-bin pair
-                        axs[axind].text(0.15, 0.10,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[axind].transAxes, fontsize=6)
+                        axs[axind].text(0.15, 0.10,f'S/N = {np.round(snr,1)}', ha='center', va='center', transform=axs[axind].transAxes, fontsize=6, fontweight='bold')
     if add_allfields == True:
         textfig += '_AllFields'
         for i in np.arange(nbins_src):
@@ -1530,9 +1538,9 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_all
                             pass
                         else:
                             continue
-                    ##################################
-                    ### Inverse Variance Weighting ###
-                    ##################################
+                    ###############################
+                    ### All fields measurement  ###
+                    ###############################
                     # Read IVW combined measurement (This work)
                     ell_txp, Cell_txp, err_txp, cov_txp = Read_TXPipe_CombMeas_Cells(probe='galaxy_shear_cl_ee',i=i,j=j,combmethod='all')
                     # computing prefactor 
@@ -1546,20 +1554,29 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_all
                                         fmt='o', 
                                         markersize=3.0, 
                                         capsize=2,
-                                        label='This work (All fields)')
-
+                                        label='This work')
+                    # generate a mask to just consider ells within scale cuts 300 < ell_txp < 1900
+                    mask = (ell_txp > 300)*(ell_txp < 1900)
+                    # kepp Cells and covariances within scale cuts
+                    ell_txp = ell_txp[mask]
+                    Cell_txp = Cell_txp[mask]
+                    cov_txp = cov_txp[mask,:][:,mask]
+                    # compute S/N
                     snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                     # z-bin pair
-                    axs[axind].text(0.15, 0.10,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[axind].transAxes, fontsize=6)
+                    axs[axind].text(0.15, 0.10,f'S/N = {np.round(snr,1)}', ha='center', va='center', transform=axs[axind].transAxes, fontsize=6, fontweight='bold')
     if theory_fname is not None:
+        print('>> Adding theory prediction')
         textfig += '_Theory'
         # Adding chisq info
         npar = 12
-        chisq, chisq_ndof, ndof = ComputeChisq(sacc_fname = "/pscratch/sd/d/davidsan/txpipe-reanalysis/hsc/outputs/ivw/summary_statistics_fourier_ivw_HikageShearSC.sacc",
-             theory_fname = theory_fname,
-             probe = 'galaxy_shear_cl_ee',
-             npar = npar)
-        text = f'$\chi^2 / \\nu = {np.round(chisq, 2)} / {int(ndof)}$ = {np.round(chisq_ndof, 2)}'
+        # Pointing to our fiducial 3x2pt + scale cuts sacc file
+        sacc_fname_aux = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab_HikageShearSC_DESC_GCandGGL_SC.sacc'
+        chisq, chisq_ndof, ndof = ComputeChisq(sacc_fname = sacc_fname_aux,
+                                                theory_fname = theory_fname,
+                                                probe = 'galaxy_shear_cl_ee',
+                                                npar = npar)
+        text = f'$\chi^2 / \\nu = {np.round(chisq, 1)} / {int(ndof)}$ = {np.round(chisq_ndof, 2)}'
         # axs[0,0].text(0.85, 0.85,f'$\chi^2 / \\nu = {np.round(chisq, 2)} / {int(npar)}$ = {np.round(chisq_ndof, 2)}', ha='center', va='center', transform=axs[0,0].transAxes, fontsize=8)
         for i in range(nbins_src):
             for j in range(i, nbins_src):
@@ -1579,12 +1596,16 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_all
                 # compute Dell = l * (l + 1) * Cell / (2 * pi)
                 Dell_th = pref * Cell_th * 10 ** 4
                 # plot
-                axs[axind].plot(ell_th, Dell_th, lw=1.2, color='k', label = text)
+                axs[axind].plot(ell_th, Dell_th, lw=1.2, color='k') # , label = text)
     
     if just_auto:
-        plt.legend(bbox_to_anchor=(0.0, 1.05),ncol=3,frameon=False,fontsize=12)
+        legend = axs[0,0].legend(ncol=3,loc='upper left',frameon=True,fontsize=6)
     else:
-        plt.legend(bbox_to_anchor=(0.0, 2.45),frameon=False,fontsize=12)
+        legend = axs[0,0].legend(loc='upper left',frameon=True,fontsize=6)
+    # Set the facecolor to white
+    legend.get_frame().set_facecolor('white')
+    # Set the edgecolor to black
+    legend.get_frame().set_edgecolor('black')
     if save_fig == True:
         print('>> Saving figure ...')
         print(' Path: ', savepath)
@@ -2626,7 +2647,7 @@ def DataVector_Check(fname):
 ########################################
 ###   Statistics & goodness-of-fit   ###
 ########################################
-def DataArray(sacc_fname, probe):
+def DataArray(sacc_fname, probe, verbose = False):
     # Read sacc data
     s = sacc.Sacc.load_fits(sacc_fname)
     # Initialize array 
@@ -2638,7 +2659,8 @@ def DataArray(sacc_fname, probe):
         for i in np.arange(nbins_src):
             for j in np.arange(nbins_src):
                 if i >= j:
-                    print(f'Data: {i, j}')
+                    if verbose == True:
+                        print(f'Data: {i, j}')
                     # read cosmic shear data points
                     ell, Cell = s.get_ell_cl('galaxy_shear_cl_ee', f'source_{i}', f'source_{j}', return_cov=False)
                     # Append to array
@@ -2660,7 +2682,7 @@ def DataArray(sacc_fname, probe):
                 d = np.append(d, Cell)
     return(d)
 
-def TheoryArray(theory_fname,probe):
+def TheoryArray(theory_fname,probe,verbose=False):
     # Initialize array 
     t = np.array([])
     # HSC specific
@@ -2670,7 +2692,8 @@ def TheoryArray(theory_fname,probe):
         for i in np.arange(nbins_src):
             for j in np.arange(nbins_src):
                 if i >= j:
-                    print(f'Theory: {i,j}')
+                    if verbose == True:
+                        print(f'Theory: {i,j}')
                     # read cosmic shear data points
                     Cell = np.loadtxt(os.path.join(theory_fname,f'theory_galaxy_shear_cl_ee_source_{i}_source_{j}.txt'))
                     # Append to array
@@ -2719,6 +2742,7 @@ def Covmat(sacc_fname,probe):
     return(cov)
 
 def ComputeChisq(sacc_fname, theory_fname, probe, npar):
+    import scipy.stats as stats
     print('<< Chisq calculation >>')
     # probe: 'galaxy_shearDensity_cl_e', 'galaxy_density_cl', 'galaxy_shear_cl_ee' or '3x2pt'
     # Extract data array for a specific probe
@@ -2741,6 +2765,10 @@ def ComputeChisq(sacc_fname, theory_fname, probe, npar):
     ndof = ndata - npar
     chisq_ndof = chisq / ndof
     print(f'Chisq / ndof = {np.round(chisq_ndof, 2)}')
+    # Compute the p-value
+    p = 1 - stats.chi2.cdf(chisq, ndof)
+    print('chi^2 = %.1lf, dof = %d, P = %.10lf' % (chisq, ndof, p))
+
     return(chisq, chisq_ndof, ndof)
 
 def ComputeChisq_NullTest(s, data_type):
