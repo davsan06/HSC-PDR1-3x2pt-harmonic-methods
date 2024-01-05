@@ -1,3 +1,4 @@
+from matplotlib import scale
 import sacc
 import numpy as np
 import matplotlib.pyplot as plt
@@ -1203,6 +1204,14 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
         ell, Cell, cov = s.get_ell_cl(probe, f'source_{i}', f'source_{j}', return_cov=True)
     elif probe == 'galaxy_density_cl':
         ell, Cell, cov = s.get_ell_cl(probe, f'lens_{i}', f'lens_{j}', return_cov=True)
+        print('>> Clustering Cells - Removing noise')
+        # Remove shot noise from clustering signal
+        noise = np.array(s.get_tag("n_ell", data_type="galaxy_density_cl", tracers=(f"lens_{i}",f"lens_{j}")))
+        if np.all(noise == None):
+            pass
+        else:
+            # print('>> Clustering Cells - Removing noise')
+            Cell = Cell - noise
     elif probe == 'galaxy_shearDensity_cl_e':
         ell, Cell, cov = s.get_ell_cl(probe, f'source_{i}', f'lens_{j}', return_cov=True)
     # extracting error from covariance
@@ -1769,8 +1778,10 @@ def Shear2pt_plot_Hamana_real(save_fig=False):
                     dpi=300,
                     bbox_inches='tight')
     return()
-def Clustering2pt_plot(fname,labels, Dell_scaling=True, add_individual=False,add_allfields=False,add_combined=False,add_literature=False,  
-                       add_byhand=False,show_residual=False,save_fig=False, 
+def Clustering2pt_plot(fname,labels, Dell_scaling=True, 
+                       add_individual=False,add_allfields=False,add_combined=False,
+                       add_literature=False,add_byhand=False,theory_fname=None,
+                       show_residual=False,show_scalecuts=False,save_fig=False, 
                        savepath='/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/measurements/clustering'):
     #########################################################################################
     # Inputs:
@@ -1806,6 +1817,10 @@ def Clustering2pt_plot(fname,labels, Dell_scaling=True, add_individual=False,add
         textfig = 'Clustering2pt_Dell'
     else:
         textfig = 'Clustering2pt_Cell'
+
+    # Multipole scale cuts for k = 0.15 1/Mpc
+    lmax = np.array([242.0, 275.0, 509.0, 669.0])
+    
     print('>> Initializing figure ...')
     # Initialize figure and format
     #loop over redshift bins
@@ -1821,11 +1836,20 @@ def Clustering2pt_plot(fname,labels, Dell_scaling=True, add_individual=False,add
                 axs[ind_plot].set_xscale('log')
                 axs[ind_plot].axhline(0, ls='--', c='k', linewidth=0.5)
                 # x-lim range
-                axs[ind_plot].set_xlim([90, 5500])
+                axs[ind_plot].set_xlim([90, 3000])
                 axs[ind_plot].set_box_aspect(1)
 
                 # z-bin pair
-                axs[ind_plot].text(0.15, 0.85,f'({i + 1},{j + 1})', ha='center', va='center', transform=axs[ind_plot].transAxes, fontsize=12)
+                axs[ind_plot].text(0.85, 0.22,f'{i + 1},{j + 1}', 
+                                   ha='center', va='center',
+                                   transform=axs[ind_plot].transAxes,
+                                   bbox=dict(facecolor='white', edgecolor='black'),
+                                   fontsize=10)
+                
+                # show scale cuts as shaded regions
+                if show_scalecuts == True:
+                    axs[ind_plot].axvspan(lmax[i], 3000, alpha=0.2, color='grey')
+                
                 if i == 0:
                     if Dell_scaling == True:
                         axs[ind_plot].set_ylabel('$\mathcal{D}^{\delta \delta}_\ell [\\times 10]$')
@@ -2048,9 +2072,16 @@ def Clustering2pt_plot(fname,labels, Dell_scaling=True, add_individual=False,add
                                             markersize=3.0, 
                                             capsize=2,
                                             label=label_comb)
+                        # generate a mask to just consider ells within scale cuts 
+                        mask = (ell_txp < lmax[i])
+                        # kepp Cells and covariances within scale cuts
+                        ell_txp = ell_txp[mask]
+                        Cell_txp = Cell_txp[mask]
+                        cov_txp = cov_txp[mask,:][:,mask]
+                        # compute S/N
                         snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                         # z-bin pair
-                        axs[ind_plot].text(0.85, 0.05,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[ind_plot].transAxes, fontsize=6)
+                        axs[ind_plot].text(0.85, 0.05,f'S/N = {np.round(snr,1)}', ha='center', va='center', transform=axs[ind_plot].transAxes, fontsize=6, fontweight='bold')
                         # Show residuals
                         if show_residual == True:
                             print('>> Computing residuals')
@@ -2095,7 +2126,7 @@ def Clustering2pt_plot(fname,labels, Dell_scaling=True, add_individual=False,add
                                                                                      i=i,j=j,
                                                                                      combmethod='all',
                                                                                      lens_sample='dr1')
-                    label_comb = 'This work (All fields)'
+                    label_comb = 'This work'
                     if Dell_scaling == True:
                         # computing prefactor 
                         pref = ell_txp * (ell_txp + 1) / (2 * np.pi)
@@ -2118,9 +2149,16 @@ def Clustering2pt_plot(fname,labels, Dell_scaling=True, add_individual=False,add
                                         markersize=3.0, 
                                         capsize=2,
                                         label=label_comb)
+                    # generate a mask to just consider ells within scale cuts 
+                    mask = (ell_txp < lmax[i])
+                    # kepp Cells and covariances within scale cuts
+                    ell_txp = ell_txp[mask]
+                    Cell_txp = Cell_txp[mask]
+                    cov_txp = cov_txp[mask,:][:,mask]
+                    # compute S/N
                     snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                     # z-bin pair
-                    axs[ind_plot].text(0.85, 0.05,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[ind_plot].transAxes, fontsize=6)            
+                    axs[ind_plot].text(0.85, 0.1,f'S/N = {np.round(snr,1)}', ha='center', va='center', transform=axs[ind_plot].transAxes, fontsize=6, fontweight='bold')       
     if add_literature == True:
         textfig += '_Literature'
         for i in np.arange(nbins_lens):
@@ -2197,12 +2235,42 @@ def Clustering2pt_plot(fname,labels, Dell_scaling=True, add_individual=False,add
         else:
             axs[3].legend(frameon=False,fontsize=8)
     else: """
+    if theory_fname is not None:
+        print('>> Adding theory prediction')
+        textfig += '_Theory'
+        # Adding chisq info
+        npar = 17
+        # Pointing to our fiducial 3x2pt + scale cuts sacc file
+        # sacc_fname_aux = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab_HikageShearSC_DESC_GCandGGL_SC.sacc'
+        # chisq, chisq_ndof, ndof = ComputeChisq(sacc_fname = sacc_fname_aux,
+        #                                         theory_fname = theory_fname,
+        #                                         probe = '',
+        #                                         npar = npar)
+        # text = f'$\chi^2 / \\nu = {np.round(chisq, 1)} / {int(ndof)}$ = {np.round(chisq_ndof, 2)}'
+        # axs[0,0].text(0.85, 0.85,f'$\chi^2 / \\nu = {np.round(chisq, 2)} / {int(npar)}$ = {np.round(chisq_ndof, 2)}', ha='center', va='center', transform=axs[0,0].transAxes, fontsize=8)
+        for i in range(nbins_lens):
+            for j in range(nbins_lens):
+                if i == j:
+                    # read cosmic shear data points
+                    ell_th = np.loadtxt(os.path.join(theory_fname, f'ell_or_theta_galaxy_density_cl_lens_{i}_lens_{j}.txt'))
+                    Cell_th = np.loadtxt(os.path.join(theory_fname,f'theory_galaxy_density_cl_lens_{i}_lens_{j}.txt'))
+                    # computing prefactor 
+                    pref = ell_th * (ell_th + 1) / (2 * np.pi)
+                    # compute Dell = l * (l + 1) * Cell / (2 * pi)
+                    Dell_th = pref * Cell_th * 10 
+                    # plot
+                    axs[i].plot(ell_th, Dell_th, lw=1.2, color='k') # , label = text)
+    
     # Set the legend in the top of figure outside
     if show_residual == True:
         textfig += '_Residuals'
-        axs[(0,3)].legend(bbox_to_anchor=(0.0, 1.3),ncol=4,frameon=False,fontsize=10)
+        legend = axs[(0,0)].legend(ncol=1,loc='upper left',frameon=True,fontsize=7)
     else:
-        axs[3].legend(bbox_to_anchor=(0.0, 1.3),ncol=4,frameon=False,fontsize=10)
+        legend = axs[0].legend(ncol=1,loc='upper left',frameon=True,fontsize=7)
+    # Set the facecolor to white
+    legend.get_frame().set_facecolor('white')
+    # Set the edgecolor to black
+    legend.get_frame().set_edgecolor('black')
     if save_fig == True:
         print(">> Saving figure ...")
         print(" Path: ", savepath)
@@ -2217,7 +2285,8 @@ def Clustering2pt_plot(fname,labels, Dell_scaling=True, add_individual=False,add
     return()
 
 def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_fname=None, \
-                    save_fig=False, savepath='/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/measurements/gglensing'):
+                   show_scalecuts = False, add_allfields = False,
+                   save_fig=False, savepath='/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/measurements/gglensing'):
     # fname list of sacc data vectors
     # labels list of labels for the dvs
     nbins_lens = 4
@@ -2228,7 +2297,8 @@ def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_
     plt.subplots_adjust(wspace=0, hspace=0)
     # Initialize figure and format
     textfig = 'Gammat2pt'   
-    #loop over redshift bins
+    # same scale cuts as for the clustering (k = 0.15 1/Mpc)    
+    lmax = np.array([242.0, 275.0, 509.0, 669.0])
     #loop over redshift bins
     for i in np.arange(nbins_src):
         for j in np.arange(nbins_lens):
@@ -2239,9 +2309,19 @@ def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_
             # x-lim range
             axs[i,j].set_xlim([90, 2500])
             # z-bin pair
-            axs[i,j].text(0.15, 0.85,f'({i + 1},{j + 1})', ha='center', va='center', transform=axs[i,j].transAxes, fontsize=12)
-            if j == 0:
+            axs[i,j].text(0.15, 0.85,f'S{i + 1},L{j + 1}', 
+                          ha='center', va='center',
+                          transform=axs[i,j].transAxes,
+                          bbox=dict(facecolor='white', edgecolor='black'),
+                          fontsize=8)
+            if show_scalecuts == True:
+                # scale cuts as shaded regions
+                axs[i,j].axvspan(lmax[j], 2500, alpha=0.2, color='grey')
+            if j == 0 and i == 3:
                 axs[i,j].set_ylabel('$\mathcal{D}^{\kappa \delta}_\ell \, [\\times 10^3]$')
+            if j == 0:
+                # set all ytick to [0, 1, 2]
+                axs[i,j].set_yticks([0, 1, 2])
             if (i == nbins_src - 1):
                 axs[i,j].set_xlabel('multipole, $\ell$')
                 axs[i,j].set_xticks((100,1000),labels=('100','1000'))
@@ -2298,9 +2378,16 @@ def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_
                                       markersize=3.0, 
                                       capsize=2,
                                       label='This work')
+                    # generate a mask to just consider ells within scale cuts
+                    mask = (ell_txp < lmax[j])
+                    # kepp Cells and covariances within scale cuts
+                    ell_txp = ell_txp[mask]
+                    Cell_txp = Cell_txp[mask]
+                    cov_txp = cov_txp[mask,:][:,mask]
+                    # compute S/N
                     snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
                     # z-bin pair
-                    axs[i,j].text(0.15, 0.70,f'S/N = {np.round(snr,2)}', ha='center', va='center', transform=axs[i,j].transAxes, fontsize=6)
+                    axs[i,j].text(0.15, 0.70,f'S/N = {np.round(snr,1)}', ha='center', va='center', transform=axs[i,j].transAxes, fontsize=6, fontweight='bold')
         elif add_combined == 'aw':
             textfig += 'AW'
             #loop over redshift bins
@@ -2320,6 +2407,36 @@ def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_
                                       markersize=3.0, 
                                       capsize=2,
                                       label='This work (AW)')
+        if add_allfields == True:
+            print('>> Adding combined measurement for all fields')
+            textfig += '_AllFields'
+            #loop over redshift bins
+            for i in np.arange(nbins_src):
+                for j in np.arange(nbins_lens):
+                    # Inverse variance weighting measurement
+                    ell_txp, Cell_txp, err_txp, cov_txp = Read_TXPipe_CombMeas_Cells(probe='galaxy_shearDensity_cl_e',i=i,j=j,combmethod='all')
+                    # computing prefactor 
+                    pref = ell_txp * (ell_txp + 1) / (2 * np.pi)
+                    # compute Dell = l * (l + 1) * Cell / (2 * pi)
+                    Dell_txp = pref * Cell_txp * 10 ** 3
+                    err_txp = pref * err_txp * 10 ** 3
+                    # plot
+                    axs[i,j].errorbar(ell_txp, Dell_txp, err_txp, 
+                                      color=colors[0], 
+                                      fmt='o', 
+                                      markersize=3.0, 
+                                      capsize=2,
+                                      label='This work')
+                    # generate a mask to just consider ells within scale cuts
+                    mask = (ell_txp < lmax[j])
+                    # kepp Cells and covariances within scale cuts
+                    ell_txp = ell_txp[mask]
+                    Cell_txp = Cell_txp[mask]
+                    cov_txp = cov_txp[mask,:][:,mask]
+                    # compute S/N
+                    snr = ComputeSNR(signal = Cell_txp, cov = cov_txp)
+                    # z-bin pair
+                    axs[i,j].text(0.15, 0.70,f'S/N = {np.round(snr,1)}', ha='center', va='center', transform=axs[i,j].transAxes, fontsize=6, fontweight='bold')
                     
     if theory_fname is not None:
         textfig += '_Theory'
