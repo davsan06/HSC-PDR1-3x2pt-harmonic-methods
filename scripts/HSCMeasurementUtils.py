@@ -2801,6 +2801,38 @@ def DataArray(sacc_fname, probe, verbose = False):
                 ell, Cell = s.get_ell_cl('galaxy_shearDensity_cl_e', f'source_{i}', f'lens_{j}', return_cov=False)
                 # append to array
                 d = np.append(d, Cell)
+    elif probe == '3x2pt':
+        # remove all data types from the sacc which are not involved in the 3x2pt analysis
+        data_types = s.get_data_types()
+        # Remove from the list the element probe
+        for dt in data_types:
+            if dt not in ['galaxy_shear_cl_ee', 'galaxy_density_cl', 'galaxy_shearDensity_cl_e']:
+                # print('Removing ', dt, ' from data vector')
+                s.remove_selection(dt)
+        # Loop over the different remaining probes in the correct order, the same as in the covariance 
+        # ['galaxy_density_cl', 'galaxy_shearDensity_cl_e', galaxy_shear_cl_ee']
+        # Clustering
+        for i in np.arange(nbins_lens):
+            for j in np.arange(nbins_lens):
+                if i == j:
+                    # read clustering data points
+                    ell, Cell = s.get_ell_cl("galaxy_density_cl", f'lens_{i}', f'lens_{j}', return_cov=False)
+                    # append to array
+                    d = np.append(d, Cell)
+        # GGLensing
+        for i in np.arange(nbins_src):
+            for j in np.arange(nbins_lens):
+                ell, Cell = s.get_ell_cl('galaxy_shearDensity_cl_e', f'source_{i}', f'lens_{j}', return_cov=False)
+                # append to array
+                d = np.append(d, Cell)
+        # Cosmic shear 
+        for i in np.arange(nbins_src):
+            for j in np.arange(nbins_src):
+                if i >= j:
+                    # read cosmic shear data points
+                    ell, Cell = s.get_ell_cl('galaxy_shear_cl_ee', f'source_{i}', f'source_{j}', return_cov=False)
+                    # Append to array
+                    d = np.append(d, Cell)
     return(d)
 
 def TheoryArray(theory_fname,probe,verbose=False):
@@ -2834,6 +2866,30 @@ def TheoryArray(theory_fname,probe,verbose=False):
                 Cell = np.loadtxt(os.path.join(theory_fname,f'theory_galaxy_sheardensity_cl_e_source_{i}_lens_{j}.txt'))
                 # append to array
                 t = np.append(t, Cell)
+    elif probe == '3x2pt':
+        # This is the correct order wrt the covariance to append probes 
+        # Clustering
+        for i in np.arange(nbins_lens):
+            for j in np.arange(nbins_lens):
+                if i == j:
+                    # read cosmic shear data points
+                    Cell = np.loadtxt(os.path.join(theory_fname,f'theory_galaxy_density_cl_lens_{i}_lens_{j}.txt'))
+                    # append to array
+                    t = np.append(t, Cell)
+        # GGLensing
+        for i in np.arange(nbins_src):
+            for j in np.arange(nbins_lens):
+                Cell = np.loadtxt(os.path.join(theory_fname,f'theory_galaxy_sheardensity_cl_e_source_{i}_lens_{j}.txt'))
+                # append to array
+                t = np.append(t, Cell)
+        # Cosmic shear
+        for i in np.arange(nbins_src):
+            for j in np.arange(nbins_src):
+                if i >= j:
+                    # read cosmic shear data points
+                    Cell = np.loadtxt(os.path.join(theory_fname,f'theory_galaxy_shear_cl_ee_source_{i}_source_{j}.txt'))
+                    # Append to array
+                    t = np.append(t, Cell)
     return(t)
 
 def Covmat(sacc_fname,probe):
@@ -2843,12 +2899,21 @@ def Covmat(sacc_fname,probe):
 
     # Get a list of all the data types in the data vector
     data_types = s.get_data_types()
-    # Remove from the list the element probe
-    data_types.remove(probe)
-    # Iterate over the list of data types and remove them from the data vector
-    for dt in data_types:
-        # print(f'Removing {dt} from data vector')
-        s.remove_selection(dt)
+    if probe != '3x2pt':
+        print('Extracting ', probe.upper(), ' covariance matrix')
+        # Remove from the list the element probe
+        data_types.remove(probe)
+        # Iterate over the list of data types and remove them from the data vector
+        for dt in data_types:
+            # print(f'Removing {dt} from data vector')
+            s.remove_selection(dt)
+    elif probe == '3x2pt':
+        print('Extracting 3x2pt covariance matrix')
+        # Remove all data types from the sacc which are not involved in the 3x2pt analysis
+        for dt in data_types:
+            if dt not in ['galaxy_density_cl', 'galaxy_shearDensity_cl_e', 'galaxy_shear_cl_ee']:
+                # print('Removing ', dt, ' from data vector')
+                s.remove_selection(dt)
     
     # Remove galaxy clustering cross-correlations
     print('Removing galaxy clustering cross-correlations')
@@ -2856,7 +2921,7 @@ def Covmat(sacc_fname,probe):
         for j in np.arange(4):
             if i > j:
                 # print(f'Removing galaxy clustering cross-correlation ({i},{j})')
-                s.remove_selection(data_type='galaxy_density_cl', tracers=(f'lens_{i}', f'source_{j}'))
+                s.remove_selection(data_type='galaxy_density_cl', tracers=(f'lens_{i}', f'lens_{j}'))
 
     # Extract covariance
     cov = s.covariance.covmat
