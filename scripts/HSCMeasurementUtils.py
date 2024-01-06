@@ -2454,7 +2454,11 @@ def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_
                 # plot 
                 axs[i,j].plot(ell_th, Dell_th, lw=1.2, color='k')
 
-    plt.legend(bbox_to_anchor=(1, 4.25),frameon=False,fontsize=12,ncol=6)
+    legend = axs[0,0].legend(frameon=True,loc='lower right',fontsize=8)
+    # Set the facecolor to white
+    legend.get_frame().set_facecolor('white')
+    # Set the edgecolor to black
+    legend.get_frame().set_edgecolor('black')
     if save_fig == True:
         print('>> Saving figure ...')
         print(' Path: ', savepath)
