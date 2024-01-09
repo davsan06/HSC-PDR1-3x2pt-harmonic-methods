@@ -6,6 +6,9 @@ import os
 import h5py
 import healpy as hp
 import seaborn as sns
+import sys
+sys.path.append('/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/scripts/')
+import HSCMCMCPlottingUtils
 
 # Define matplolib colors: black, purple, green, red
 colors = ['#000000', '#800080', '#008000', '#ff0000', "#E69F00", "#56B4E9", "#009E73", "#F0E442", '#800080', "#0072B2", "#CC79A7", "#D55E00"]
@@ -2927,7 +2930,57 @@ def Covmat(sacc_fname,probe):
     cov = s.covariance.covmat
     return(cov)
 
-def ComputeChisq(sacc_fname, theory_fname, probe, npar):
+
+    
+def ComputeNpar(chain_fname, show_auxplots=False):
+    """
+    Compute the effective number of parameters (npar) based on a chain file.
+
+    Parameters:
+    - chain_fname (str): The file name of the chain file.
+    - show_auxplots (bool): Whether to show auxiliary plots. Default is False.
+
+    Returns:
+    - npar (float): The effective number of parameters.
+    """
+    # Read parameters in the chain
+    parameters = HSCMCMCPlottingUtils.cosmosis_header(fname = chain_fname)
+    # Define list of parameters to remove, which are derived in the chain and not directly sampled
+    params_to_remove = ['$\\Omega_m$', '$\\sigma_8$', '$S_8$', '$\\Chi^2$', '$prior$', '$like$', '$post$', '$weight$']
+    # Read samples from the chain
+    samples = np.loadtxt(chain_fname)
+    # Obtain at which index params_to_remove appear in parameters
+    idx = []
+    for p in params_to_remove:
+        idx.append(parameters.index(p))
+    # Remove the corresponding columns from the samples
+    samples = np.delete(samples, idx, axis=1)
+    # Remove from parameters the corresponding elements
+    for p in params_to_remove:
+        parameters.remove(p)
+    # Compute the correlation matrix of the parameters
+    corr_mat = np.corrcoef(samples, rowvar=False)
+    # Plot the correlation matrix
+    if show_auxplots == True:
+        fig = plt.figure(figsize=(8,8))
+        plt.imshow(corr_mat, cmap='RdBu', vmin=-1, vmax=1)
+        plt.colorbar()
+        # Set as xticks and yticks the parameter names
+        plt.xticks(np.arange(len(parameters)), parameters, rotation=45, fontsize=7)
+        plt.yticks(np.arange(len(parameters)), parameters, fontsize=7)
+        plt.show()
+        plt.close()
+    # Compute the range of the matrix
+    _eigv, _eigvec = np.linalg.eig(corr_mat)
+    _eigv[ _eigv > 1.0 ] = 1.
+    _eigv[ _eigv < 0.0 ] = 0.
+    # Total number of params in the chain
+    Ntot = len(_eigv)
+    # Compute the effective number of parameters
+    npar = Ntot - np.sum( _eigv )
+    return(npar)
+
+def ComputeChisq(sacc_fname, theory_fname, chain_fname, probe):
     import scipy.stats as stats
     print('<< Chisq calculation >>')
     # probe: 'galaxy_shearDensity_cl_e', 'galaxy_density_cl', 'galaxy_shear_cl_ee' or '3x2pt'
@@ -2948,9 +3001,15 @@ def ComputeChisq(sacc_fname, theory_fname, probe, npar):
     print(f'Chisq = {np.round(chisq, 2)}')
     # ndof
     ndata = len(d)
+    print(f'Ndata = {ndata}')
+    # Compute the effective number of degrees of freedom as the 
+    # number of constrained parameters is not exactly the same 
+    # as the ones samples due to many of them being prior-dominated
+    npar = ComputeNpar(chain_fname)
+    print(f'Npar = {np.round(npar,3)} ~= {np.round(npar,0)}')
     ndof = ndata - npar
     chisq_ndof = chisq / ndof
-    print(f'Chisq / ndof = {np.round(chisq_ndof, 2)}')
+    print(f'Chisq / ndof = {np.round(chisq,2)} / {np.round(npar,0)} = {np.round(chisq_ndof, 2)}')
     # Compute the p-value
     p = 1 - stats.chi2.cdf(chisq, ndof)
     print('chi^2 = %.1lf, dof = %d, P = %.10lf' % (chisq, ndof, p))
