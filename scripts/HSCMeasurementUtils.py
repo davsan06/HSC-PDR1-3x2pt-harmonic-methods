@@ -270,6 +270,39 @@ def RedshiftDistr_plot(sacc, label, savepath = None):
     plt.close()
     return()
 
+def SourceDensityMaps_plot(fname = 'source_maps.hdf5', title = 'Source density maps'):
+    table = h5py.File(fname)
+
+    fig, axes = plt.subplots(1,4,figsize=(18,3))
+    fig_w, axes_w = plt.subplots(1,4,figsize=(18,3))
+
+    for i in np.arange(4):
+        # Number of galaxies
+        ngal = np.array(table['maps'][f'count_{i}']['value'])
+        pixel = np.array(table['maps'][f'count_{i}']['pixel'])
+        theta,phi = IndexToDeclRa(pixel,nside=2048)
+        sc_ngal = axes[i].scatter(phi,theta,c=ngal,s=1.0)
+        axes[i].set_xlabel('R.A.')
+        if i == 0:
+            axes[i].text(0.7,0.8,f'{title}',transform = axes[i].transAxes)
+            axes[i].set_ylabel('Dec.')
+        # Compute the number of informed pixels
+        n_informed = len(ngal[ngal > 0.0])
+        # Compute the area of one pixel, assuming fiducial nside = 2048
+        pixarea = hp.nside2pixarea(2048, degrees=True)
+        # Compute the area of the informed pixels
+        area = n_informed * pixarea
+        # Compute the total number sources in the map
+        n_sources = np.sum(ngal)
+        # Compute the density
+        density = n_sources / (area  * 60**2) # area in arcmin^2
+        # Add the density to the plot
+        axes[i].text(0.7,0.7,f'{density:.2f} source * arcmin$^{{{-2}}}$',transform = axes[i].transAxes)
+
+    cbar = fig.colorbar(sc_ngal)
+    cbar.set_label('source counts')
+    return()
+
 ###############################
 ###  Literature comparison  ###
 ###############################
