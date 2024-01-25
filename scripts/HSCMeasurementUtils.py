@@ -88,19 +88,6 @@ def RaDecToIndex(ra_deg, dec_deg, nside=32):
 
     return pix_indices
 
-def LensTomoCat_plot(fname, title):
-    """
-    Plot the lens counts histogram based on the given file.
-
-    Parameters:
-    fname (str): The file path of the data file.
-    title (str): The title of the plot.
-
-    Returns:
-    None
-    """
-    
-    # Rest of the code...
 def LensTomoCat_plot(fname):
     """
     Plots a histogram of lens counts in different redshift bins.
@@ -270,6 +257,40 @@ def RedshiftDistr_plot(sacc, label, savepath = None):
     plt.close()
     return()
 
+def LensDensityMaps_plot(fname = 'lens_maps.hdf5', title = 'Lens density maps'):
+    table = h5py.File(fname)
+
+    fig, axes = plt.subplots(1,4,figsize=(18,3))
+    fig_w, axes_w = plt.subplots(1,4,figsize=(18,3))
+
+    for i in np.arange(4):
+        # Number of galaxies
+        ngal = np.array(table['maps'][f'ngal_{i}']['value'])
+        pixel = np.array(table['maps'][f'ngal_{i}']['pixel'])
+        theta,phi = IndexToDeclRa(pixel,nside=2048)
+        sc_ngal = axes[i].scatter(phi,theta,c=ngal,s=1.0)
+        axes[i].set_xlabel('R.A.')
+        if i == 0:
+            axes[i].text(0.7,0.8,f'{title}',transform = axes[i].transAxes)
+            axes[i].set_ylabel('Dec.')
+        # Compute the number of informed pixels
+        n_informed = len(ngal[ngal > 0.0])
+        # Compute the area of one pixel, assuming fiducial nside = 2048
+        pixarea = hp.nside2pixarea(2048, degrees=True)
+        # Compute the area of the informed pixels
+        area = n_informed * pixarea
+        # Compute the total number sources in the map
+        n_sources = np.sum(ngal)
+        # Compute the density
+        density = n_sources / (area  * 60**2) # area in arcmin^2
+        # Add the density to the plot
+        axes[i].text(0.7,0.7,f'{density:.2f} lens * arcmin$^{{{-2}}}$',transform = axes[i].transAxes)
+
+    cbar = fig.colorbar(sc_ngal)
+    cbar.set_label('lens counts')
+    return()
+    
+    
 def SourceDensityMaps_plot(fname = 'source_maps.hdf5', title = 'Source density maps'):
     table = h5py.File(fname)
 
@@ -1030,6 +1051,14 @@ def ApplyGCandGGLCuts(sacc_list):
             print('Shape of the covariance after GGLensing cuts: ', s.covariance.covmat.shape)
             # Save sacc
             print('>> >> Saving ...')
+            s.save_fits(sacc_fname_save, overwrite=True)
+            # Introduce factor F = 136.9 / 93.06 = 1.471 to account for the area differences in the mask
+            # for the covariance
+            covmat_aux = 1.471 * s.covariance.covmat 
+            s.add_covariance(covmat_aux, overwrite=True)
+            print('>> >> Saving 3x2pt dv with 1.471 * covmat')
+            sacc_fname_save = f"{root}_{text_to_add}_1.471COVMAT{extension}"
+            print(f'-{sacc_fname_save}')
             s.save_fits(sacc_fname_save, overwrite=True)
         else:
             print('>> File does not exist')
@@ -2597,16 +2626,18 @@ def Shear2pt_NullTest_plot(fname, just_auto=False, save_fig=False, savepath='/ps
                         continue
                 # log-log scale
                 axs[axind].set_xscale('log')
-                # scale cuts
-                axs[axind].axvline(300, ls='--', c='k', linewidth=0.5)
-                axs[axind].axvline(1900, ls='--', c='k', linewidth=0.5)
+                # scale cuts as shaded bands
                 axs[axind].axhline(0, ls='--', c='k', linewidth=0.5)
-                axs[axind].axvspan(xmin=50, xmax=300, color='grey', alpha=0.01)
-                axs[axind].axvspan(xmin=1900, xmax=6800, color='grey', alpha=0.01)
+                axs[axind].axvspan(xmin=50, xmax=300, color='grey', alpha=0.2)
+                axs[axind].axvspan(xmin=1900, xmax=6800, color='grey', alpha=0.2)
                 # x-lim range
                 axs[axind].set_xlim([90, 6144])
                 # z-bin pair
-                axs[axind].text(0.85, 0.85,f'({i + 1},{j + 1})', ha='center', va='center', transform=axs[axind].transAxes, fontsize=12)
+                axs[axind].text(0.85, 0.15,f'{i + 1},{j + 1}', 
+                                ha='center', va='center',
+                                transform=axs[axind].transAxes,
+                                bbox=dict(facecolor='white', edgecolor='black'),
+                                fontsize=12)
                 if just_auto == False:
                     if i == 1:
                         axs[axind].set_ylim([-5., 5.])
@@ -2615,7 +2646,7 @@ def Shear2pt_NullTest_plot(fname, just_auto=False, save_fig=False, savepath='/ps
                     if i == 3:
                         axs[axind].set_ylim([-10., 10.])
 
-                if j == 0:
+                if (i == nbins_src - 1) and j == 0:
                     axs[axind].set_ylabel('$C^{\kappa \kappa}_\ell [\\times 10^{10}]$')
                 if just_auto:
                     axs[axind].set_xlabel('multipole, $\ell$')
@@ -2702,22 +2733,31 @@ def Gammat2pt_NullTest_plot(fname, save_fig=False, savepath='/pscratch/sd/d/davi
     plt.subplots_adjust(wspace=0, hspace=0)
     # Initialize figure and format
     textfig = 'Gammat2pt_NullTest'   
-    #loop over redshift bins
+    # same scale cuts as for the clustering (k = 0.15 1/Mpc)    
+    lmax = np.array([242.0, 275.0, 509.0, 669.0])
     #loop over redshift bins
     for i in np.arange(nbins_src):
         for j in np.arange(nbins_lens):
             # log-log scale
             axs[i, j].set_xscale('log')
-            # Set y lim to -1, 1
-            axs[i, j].set_ylim([-1, 1])
             # # scale cuts
             axs[i,j].axhline(0, ls='--', c='k', linewidth=0.5)
             # x-lim range
             axs[i,j].set_xlim([90, 2500])
             # z-bin pair
-            axs[i,j].text(0.85, 0.85,f'({i + 1},{j + 1})', ha='center', va='center', transform=axs[i,j].transAxes, fontsize=12)
+            axs[i,j].text(0.15, 0.85,f'S{i + 1},L{j + 1}', 
+                          ha='center', va='center',
+                          transform=axs[i,j].transAxes,
+                          bbox=dict(facecolor='white', edgecolor='black'),
+                          fontsize=8)
+            
+            # scale cuts as shaded regions
+            axs[i,j].axvspan(lmax[j], 2500, alpha=0.2, color='grey')
+            if j == 0 and i == 3:
+                axs[i,j].set_ylabel('$\mathcal{D}^{\kappa \delta}_\ell \, [\\times 10^3]$')
             if j == 0:
-                axs[i,j].set_ylabel('$C^{\kappa \delta}_\ell [\\times 10^8]$')
+                # set all ytick to [0, 1, 2]
+                axs[i,j].set_yticks([0, 1, 2])
             if (i == nbins_src - 1):
                 axs[i,j].set_xlabel('multipole, $\ell$')
                 axs[i,j].set_xticks((100,1000),labels=('100','1000'))
