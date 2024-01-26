@@ -3082,7 +3082,7 @@ def ComputeChisq(sacc_fname, theory_fname, chain_fname, probe):
     print(f'Npar = {np.round(npar,3)} ~= {np.round(npar,0)}')
     ndof = ndata - npar
     chisq_ndof = chisq / ndof
-    print(f'Chisq / ndof = {np.round(chisq,2)} / {np.round(npar,0)} = {np.round(chisq_ndof, 2)}')
+    print(f'Chisq / ndof = {np.round(chisq,2)} / {np.round(ndof,0)} = {np.round(chisq_ndof, 2)}')
     # Compute the p-value
     p = 1 - stats.chi2.cdf(chisq, ndof)
     print('chi^2 = %.1lf, dof = %d, P = %.10lf' % (chisq, ndof, p))
