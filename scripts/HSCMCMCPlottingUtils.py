@@ -388,6 +388,198 @@ parameters_mn_eqwpost_hamana = [ '$\Omega_{cdm}$',
                                  '$like$',
                                  '$post$' ]
 
+parameters_des_3x2pt = ["$\Omega_m$",
+                            "$h$",
+                            '$\Omega_b$',
+                            "$n_s$",
+                            "$A_s$",
+                            "$\Omega_\nu h^2$",
+                            "$m_1$",
+                            "$m_2$",
+                            "$m_3$",
+                            "$m_4$",
+                            "$zs_bias\_1$",
+                            "$zs_bias\_2$",
+                            "$zs_bias\_3$",
+                            "$zs_bias\_4$",
+                            "$zl_bias\_1$",
+                            "$zl_bias\_2$",
+                            "$zl_bias\_3$",
+                            "$zl_bias\_4$",
+                            "$zl_bias\_5$",
+                            "$zl_width\_1$",
+                            "$zl_width\_2$",
+                            "$zl_width\_3$",
+                            "$zl_width\_4$",
+                            "$zl_width\_5$",
+                            "$zl_bias\_6$",
+                            "$zl_width\_6$",
+                            "$b1e\_sig8\_bin1$",
+                            "$b1e\_sig8\_bin2$",
+                            "$b1e\_sig8\_bin3$",
+                            "$b1e\_sig8\_bin4$",
+                            "$b1e\_sig8\_bin5$",
+                            "$b1e\_sig8\_bin6$",
+                            "$b2e\_sig8sq\_bin1$",
+                            "$b2e\_sig8sq\_bin2$",
+                            "$b2e\_sig8sq\_bin3$",
+                            "$b2e\_sig8sq\_bin4$",
+                            "$b2e\_sig8sq\_bin5$",
+                            "$b2e\_sig8sq\_bin6$",
+                            "$a1$",
+                            "$a2$",
+                            "$alpha1$",
+                            "$alpha2$",
+                            "$bias\_ta$",
+                            '$\\sigma_8$',
+                            "$SIGMA\_12$",
+                            "$2PT\_CHI2$",
+                            "$prior$",
+                            "$like$",
+                            "$post$",
+                            "$weight$"
+        ]
+
+parameters_des_2x2pt = [
+                       "$\Omega_m$",
+                        r"$h_0$",
+                        r"$\omega_b$",
+                        r"$n_s$",
+                        r"$a_s$",
+                        r"$\Omega_{\nu} h^2$",
+                        r"$m_1$",
+                        r"$m_2$",
+                        r"$m_3$",
+                        r"$m_4$",
+                        r"$\text{bias\_1}^{\text{wl}}$",
+                        r"$\text{bias\_2}^{\text{wl}}$",
+                        r"$\text{bias\_3}^{\text{wl}}$",
+                        r"$\text{bias\_4}^{\text{wl}}$",
+                        r"$\text{bias\_1}^{\text{lens}}$",
+                        r"$\text{bias\_2}^{\text{lens}}$",
+                        r"$\text{bias\_3}^{\text{lens}}$",
+                        r"$\text{bias\_4}^{\text{lens}}$",
+                        r"$\text{width\_1}^{\text{lens}}$",
+                        r"$\text{width\_2}^{\text{lens}}$",
+                        r"$\text{width\_3}^{\text{lens}}$",
+                        r"$\text{width\_4}^{\text{lens}}$",
+                        r"$b1e\_sig8\_bin1$",
+                        r"$b1e\_sig8\_bin2$",
+                        r"$b1e\_sig8\_bin3$",
+                        r"$b1e\_sig8\_bin4$",
+                        r"$b2e\_sig8sq\_bin1$",
+                        r"$b2e\_sig8sq\_bin2$",
+                        r"$b2e\_sig8sq\_bin3$",
+                        r"$b2e\_sig8sq\_bin4$",
+                        r"$a1$",
+                        r"$a2$",
+                        r"$\alpha_1$",
+                        r"$\alpha_2$",
+                        r"$\text{bias\_ta}$",
+                        '$\\sigma_8$',
+                        r"$\Sigma_{12}$",
+                        r"$\text{2PT\_CHI2}$",
+                        r"$\text{prior}$",
+                        r"$\text{like}$",
+                        r"$\text{post}$",
+                        "$weight$"
+]
+
+
+parameters_des_1x2pt = [
+                        "$\Omega_m$",
+                        r"$h$",
+                        r"$\omega_b$",
+                        r"$n_s$",
+                        r"$a_s$",
+                        r"$\Omega_{\nu}h^2$",
+                        r"$m_1$",
+                        r"$m_2$",
+                        r"$m_3$",
+                        r"$m_4$",
+                        r"$\text{bias\_1}^{\text{wl}}$",
+                        r"$\text{bias\_2}^{\text{wl}}$",
+                        r"$\text{bias\_3}^{\text{wl}}$",
+                        r"$\text{bias\_4}^{\text{wl}}$",
+                        r"$\text{bias\_1}^{\text{lens}}$",
+                        r"$\text{bias\_2}^{\text{lens}}$",
+                        r"$\text{bias\_3}^{\text{lens}}$",
+                        r"$\text{width\_1}^{\text{lens}}$",
+                        r"$\text{width\_2}^{\text{lens}}$",
+                        r"$\text{width\_3}^{\text{lens}}$",
+                        r"$b_1^{\text{lens}}$",
+                        r"$b_2^{\text{lens}}$",
+                        r"$b_3^{\text{lens}}$",
+                        r"$a_1^{\text{ia}}$",
+                        r"$a_2^{\text{ia}}$",
+                        r"$\alpha_1^{\text{ia}}$",
+                        r"$\alpha_2^{\text{ia}}$",
+                        r"$\text{bias\_ta}^{\text{ia}}$",
+                        '$\\sigma_8$',
+                        r"$\Sigma_{12}$",
+                        r"$\text{2PT\_CHI2}$",
+                        r"$\text{prior}$",
+                        r"$\text{like}$",
+                        r"$\text{post}$",
+                        "$weight$"
+]
+
+parameters_des_kids = ['$gbias_1$',
+                       '$gbias_2$',
+                       '$gbias_3$',
+                       '$gbias_4$',
+                       '$uncorr_bias_1$',
+                       '$uncorr_bias_2$',
+                       '$uncorr_bias_3$',
+                       '$uncorr_bias_4$',
+                       '$uncorr_bias_5$',
+                       '$m1$',
+                       '$m2$',
+                       '$m3$',
+                       '$m4$',
+                       '$a1_des$',
+                       '$alpha1_des$',
+                       '$a1_kids$',
+                       '$alpha1_kids$',
+                       '$logt_agn$',
+                       '$omch2$',
+                       '$ombh2$',
+                       '$h0$',
+                       '$n_s$',
+                       '$s8_input$',
+                       '$mnu$',
+                       '$S_8$',
+                       '$\\sigma_8$',
+                       '$A_S$',
+                       '$\Omega_m$',
+                       '$OMEGA_LAMBDA$',
+                       '$COSMOMC_THETA$',
+                       '$BIAS_1$',
+                       '$BIAS_2$',
+                       '$BIAS_3$',
+                       '$BIAS_4$',
+                       '$BIAS_5$',
+                       '$BIN_1$',
+                       '$BIN_2$',
+                       '$BIN_3$',
+                       '$BIN_4$',
+                       '$BIN_5$',
+                       '$DELTA_Z_OUT_DES--BIN_1$',
+                       '$DELTA_Z_OUT_DES--BIN_2$',
+                       '$DELTA_Z_OUT_DES--BIN_3$',
+                       '$DELTA_Z_OUT_DES--BIN_4$',
+                       '$like_kids$',
+                       '$like_des$',
+                       '$like_norm$',
+                       '$prior$',
+                       '$like$',	
+                       '$post$',	
+                       '$weight$'
+                ]
+
+
+
+
 ########################################
 ###         Initialize chains        ###
 ########################################
@@ -506,6 +698,8 @@ def omega_m(sample,parameters):
         omb = sample[:,parameters.index('$\Omega_b$')]
         # Compute omega_m
         om = omc + omb
+    elif '$\\Omega_m$' in parameters:
+        om = sample[:,parameters.index('$\\Omega_m$')]
     else:
         print('Invalid case')
     # print(np.mean(om))
@@ -985,6 +1179,10 @@ def plot_S8(chain,labelpng,S8_alpha,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/
     return(fig)
 
 def plot_Omegam_sigma8_S8(chain,labelpng,S8_alpha,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
+    chain.configure(
+                legend_kwargs={"fontsize": 8},
+                legend_location=(0, 0),
+                )
     fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$', '$S_8$'], 
                              extents=extents_dict,
                              watermark=r"Preliminary",
@@ -1204,6 +1402,10 @@ def plot_pz_stretch_source(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2p
 ###          Galaxy bias           ###
 ######################################
 def plot_galbias_lens(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
+    chain.configure(
+                legend_kwargs={"fontsize": 8},
+                legend_location=(0, 0),
+                )
     fig = chain.plotter.plot(parameters=['$b^{lens}_1$','$b^{lens}_2$','$b^{lens}_3$','$b^{lens}_4$'],
                              extents=extents_dict,
                              watermark="Preliminary",
@@ -1221,6 +1423,10 @@ def plot_galbias_lens(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC
 
 def plot_intrinsic_alignments(chain,labelpng,mode="lin",savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/shear'):
     # mode = "lin" or "nla" for linear o non-linear alignment, respectively
+    chain.configure(
+                legend_kwargs={"fontsize": 8},
+                legend_location=(0, 0),
+                )
     if mode == "nla":
         fig = chain.plotter.plot(parameters=['$A_{IA}$','$\eta$'],
                                  extents=extents_dict,
@@ -1230,6 +1436,9 @@ def plot_intrinsic_alignments(chain,labelpng,mode="lin",savepath='/pscratch/sd/d
             plt.savefig(os.path.join(savepath,f'nla-ia_{labelpng}.png'),
                        dpi=300,
                        bbox_inches='tight')
+            plt.savefig(os.path.join(savepath,f'nla-ia_{labelpng}.pdf'),
+                       dpi=300,
+                       bbox_inches='tight')
     elif mode == "lin":
         fig = chain.plotter.plot(parameters=['$A_{IA,lin}$','$\\alpha_z$'],
                                  extents=extents_dict,
@@ -1237,6 +1446,9 @@ def plot_intrinsic_alignments(chain,labelpng,mode="lin",savepath='/pscratch/sd/d
                                  figsize=(3,3))
         if savepath is not None:
             plt.savefig(os.path.join(savepath,f'lin-ia_{labelpng}.png'),
+                       dpi=300,
+                       bbox_inches='tight')
+            plt.savefig(os.path.join(savepath,f'lin-ia_{labelpng}.pdf'),
                        dpi=300,
                        bbox_inches='tight')
     plt.show()
@@ -1264,6 +1476,9 @@ def plot_delta_m(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-
 ######################################
 
 def plot_full_shear_hikage(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
+    chain.configure(
+                    legend_kwargs={"fontsize": 16}
+                   )
     fig = chain.plotter.plot(parameters=[# Cosmology
                                         '$\Omega_m$','$\sigma_8$','$S_8$','$\Omega_b \cdot h^2$','$\Omega_{cdm} \cdot h^2$','$n_{s}$','$h$','$\ln(10^{10} A_s)$',
                                          # Intrinsic alignment
@@ -1278,10 +1493,10 @@ def plot_full_shear_hikage(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2p
                              figsize="GROW")
     if savepath is not None:
         plt.savefig(os.path.join(savepath,f'full_shear_hikage_{labelpng}.png'),
-                dpi=300,
+                dpi=500,
                 bbox_inches='tight')
         plt.savefig(os.path.join(savepath,f'full_shear_hikage_{labelpng}.pdf'),
-                dpi=300,
+                dpi=500,
                 bbox_inches='tight')
     plt.show()
     plt.close()
@@ -1305,3 +1520,204 @@ def plot_full_shear_hamana(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2p
     plt.show()
     plt.close()
     return(fig)
+
+def S8_comparison_plotter(chain_list, label_list, labelpng):
+    """
+    Plots a comparison of S8, Omega_m, and sigma8 values for different chains.
+
+    Args:
+        chain_list (list): List of file paths to the chains.
+        label_list (list): List of labels for each chain.
+        labelpng (str): Label for the output PNG file.
+
+    Returns:
+        None
+    """
+    from operator import index
+    import matplotlib.pyplot as plt
+    import matplotlib.gridspec as gridspec
+    from scipy.special import ndtri
+
+    # Create a figure
+    fig = plt.figure(figsize=(10, 4))
+
+    # Define the GridSpec
+    gs = gridspec.GridSpec(1, 3, figure=fig)  # 1 row, 4 columns
+
+    # Add subplots
+    ax1 = fig.add_subplot(gs[0, 0])  # First subplot spans columns 0 and 1
+    ax1.set_xlabel('$S_8$')
+    ax2 = fig.add_subplot(gs[0, 1])    # Second subplot in column 2
+    ax2.set_xlabel('$\Omega_m$')
+    ax3 = fig.add_subplot(gs[0, 2])    # Third subplot in column 3
+    ax3.set_xlabel('$\sigma_8$')
+
+    # Remove y ticks from all panels
+    # ax1.set_yticks([])
+    ax1.set_ylim([-2,len(label_list)])
+    ax2.set_yticks([])
+    ax2.set_ylim([-2,len(label_list)])
+    ax3.set_yticks([])
+    ax3.set_ylim([-2,len(label_list)])
+
+    index = 0
+    color_array = []
+    row_index = np.arange(len(label_list))[::-1]
+    for label, fname in zip(label_list,chain_list):
+        print(index, label, fname)
+        if index == 0:
+            color='purple'
+            symbol = '*'
+            size = 8.0
+        else:
+            color='k'
+            symbol = 'o'
+            size = 5.0
+        if fname == '/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/hsc_chains/using_cls/HSC_Y1_LCDM_post_fid.txt':
+            print('Hikage et al. cosmic shear')
+            color='blue'
+            # Read Hikage et al. HSC official chain
+            sample = np.loadtxt(fname)
+            # All weights are 1 
+            weigths = sample[:,0]
+            # Read the parameters
+            parameters = list(np.copy(parameters_hsc))
+            # Appending S8 derived parameter
+            sample,parameters = S8(sample=sample,parameters=parameters,alpha=0.5)
+            # Re-scaling multiplicative shear bias 100 * Delta m
+            col = parameters.index('m')
+            sample[:,col] /= 100
+            # sigmas = np.array([2.85, 1.35, 3.83, 3.76])/100
+            col = parameters.index('$\Delta z^{source}_1$')
+            sigma = 2.85 / 100
+            sample[:,col] = ndtri(sample[:,col]) * sigma
+            # sample[:,col] /= 100
+            col = parameters.index('$\Delta z^{source}_2$')
+            sigma = 1.35 / 100
+            sample[:,col] = ndtri(sample[:,col]) * sigma
+            # sample[:,col] /= 100
+            col = parameters.index('$\Delta z^{source}_3$')
+            sigma = 3.83 / 100
+            sample[:,col] = ndtri(sample[:,col]) * sigma
+            # sample[:,col] /= 100
+            col = parameters.index('$\Delta z^{source}_4$')
+            sigma = 3.76 / 100
+            sample[:,col] = ndtri(sample[:,col]) * sigma
+        elif fname == '/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/carlos_chains/hsc_dz_Andrina_ell300/hsc_dz_Andrina_ell300.merged.txt':
+            sample = np.loadtxt(fname)
+            weigths = sample[:,0]
+            posterior = sample[:,1]
+            parameters = list(np.copy(parameters_nicola))
+            # Sampling Om_c and Om_b
+            sample,parameters=omega_m(sample=sample,parameters=parameters)
+            # Appendin S8 derived parameter
+            sample,parameters = S8(sample=sample,parameters=parameters,alpha=0.5)
+        else:   
+            sample = np.loadtxt(fname)
+            if 'DES Year 3 x KiDS 1000' in label:
+                parameters = list(np.copy(parameters_des_kids))
+                color = 'blue'
+            elif 'DES' in label and '3x2pt' in label:
+                parameters = list(np.copy(parameters_des_3x2pt))
+            elif 'DES' in label and '2x2pt' in label:
+                parameters = list(np.copy(parameters_des_2x2pt))
+            elif 'DES' in label and '1x2pt' in label :
+                parameters = list(np.copy(parameters_des_1x2pt))
+            if 'DES' in label:
+                color = 'blue'
+            else:
+                # Extract parameters name from chain
+                parameters = cosmosis_header(fname=fname)
+            if '$weight$' in parameters:
+                # Extract weights and posterior
+                weigths = sample[:,parameters.index('$weight$')]
+                # Burn-in cut
+                # Find the first index where the weight is larger than 1e-6
+                ind_burnin = np.argmax(weigths>1e-6)
+                # Apply burn-in cut
+                sample = sample[ind_burnin:,:]
+                # Extract weights and posterior
+                weigths = sample[:,parameters.index('$weight$')]
+            if '$\Omega_m$' in parameters:
+                print('>> Omega_m already computed during sampling')
+            else:
+                print('>> Computing Omega_m from sampled Om_c*h^2 and Om_b*h^2')
+                # Sampling Om_c*h^2 and Om_b*h^2
+                sample,parameters=omega_m(sample=sample,parameters=parameters)
+            if '$S_8$' not in parameters:
+                print('>> Computing S8')
+                # Computing S_8
+                sample,parameters=S8(sample=sample,parameters=parameters,alpha=0.5) 
+            else:
+                print('>> S8 already computed')  
+
+        # y-axis position where to put this case
+        ypos = row_index[index] 
+        ##########
+        ### S8 ###
+        ##########
+        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$S_8$')])
+        print(f'S8 = {med}+{up}-{lo}')
+        # Plot data with asymetric errorbars in x-axis direction
+        ax1.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=5, capthick=1)
+        if index == 0:
+            # Set vertical shaded region spanning the 1-sigma confidence interval
+            ax1.axvspan(med-lo, med+up, alpha=0.2, color='purple')
+            # Set a vertical white line at x = central value of S8
+            ax1.axvline(med, color='w')    
+        ###############
+        ### Omega_m ###
+        ###############
+        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\Omega_m$')])
+        print(f'Omega_matter = {med}+{up}-{lo}')
+        # Plot data with asymetric errorbars in x-axis direction
+        ax2.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=5, capthick=1)
+        if index == 0:
+            # Set vertical shaded region spanning the 1-sigma confidence interval
+            ax2.axvspan(med-lo, med+up, alpha=0.2, color='purple')
+            # Set a vertical white line at x = central value of Omega_m
+            ax2.axvline(med, color='w')
+        ##############
+        ### sigma8 ###
+        ##############
+        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\sigma_8$')])
+        print(f'sigma_8 = {med}+{up}-{lo}')
+        # Plot data with asymetric errorbars in x-axis direction
+        ax3.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=5, capthick=1)
+        if index == 0:
+            # Set vertical shaded region spanning the 1-sigma confidence interval
+            ax3.axvspan(med-lo, med+up, alpha=0.2, color='purple')
+            # Set a vertical white line at x = central value of Omega_m
+            ax3.axvline(med, color='w')
+        # Append the color to the color array
+        color_array.append(color)
+        # Next loop
+        index += 1    
+
+    # Set as y-tick the name of the chain
+    ax1.set_yticks(row_index, label_list, fontsize=10)
+
+    # Get the y-tick labels
+    yticklabels = plt.gca().get_yticklabels()
+
+    # Set the color of each y-tick label
+    for label, color in zip(yticklabels, color_array):
+        label.set_color(color)
+
+    # Set the x-axis limits
+    ax1.set_xlim([0.5,0.95])
+    ax2.set_xlim([0.1,0.5])
+    ax3.set_xlim([0.5,1.3])
+
+    savepath = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/S8-Omegam-sigma8-comparison/'
+    if labelpng is not None:
+        plt.savefig(os.path.join(f'S8-median1D-{labelpng}.png'),
+                bbox_inches='tight',
+                dpi=300)
+
+        plt.savefig(os.path.join(f'S8-median1D-{labelpng}.pdf'),
+                bbox_inches='tight',
+                dpi=300)
+
+    plt.show()
+    plt.close()# 
