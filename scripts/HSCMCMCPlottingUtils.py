@@ -63,6 +63,7 @@ parameters_desc = [# Cosmology parameters
                    '$\Omega_m$',
                    '$\Omega_{cdm} \cdot h^2$',
                    '$\Omega_b \cdot h^2$',
+                   '$\\Omega_\\nu h^2$',
                    '$h$',
                    '$A_s$',
                    '$\ln(10^{10} A_s)$',
@@ -113,6 +114,7 @@ parameters_dict_desc = {# Cosmology parameters
                         'cosmological_parameters--omega_c':'$\Omega_{cdm}$',
                         'cosmological_parameters--ombh2':'$\Omega_b \cdot h^2$',
                         'cosmological_parameters--omega_b':'$\Omega_b$',
+                        'cosmological_parameters--omnuh2':'$\\Omega_\\nu h^2$',
                         'cosmological_parameters--h0':'$h$',
                         'cosmological_parameters--a_s':'$A_s$',
                         'cosmological_parameters--log10as':'$\ln(10^{10} A_s)$',
@@ -1140,6 +1142,18 @@ def report_median_68assy(arr):
     # print(f'{median}+{upper}-{lower}')
     return(median, upper, lower)
 
+def report_mean_68assy(arr):
+    # arr = data_hsc[:,parameters_hsc.index('$\Omega_m$')]
+    mean = np.mean(arr)
+    upper, lower = sigma_68(arr, axis=None)
+    upper = upper - mean
+    lower = mean - lower 
+    median = np.round(mean, 3)
+    upper = np.round(upper, 3)
+    lower = np.round(lower, 3)
+    # print(f'{median}+{upper}-{lower}')
+    return(mean, upper, lower)
+
 def report_best_fit(filename,labeltxt,paramslist,path_save='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/bestfit_files/clustering'):
     # Goal - report median and 68% CL
     
@@ -1311,6 +1325,19 @@ def plot_cosmological_as(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-
     plt.savefig(os.path.join(savepath,f'cosmo_as_{labelpng}.png'),
                dpi=300,
                bbox_inches='tight')
+    plt.show()
+    plt.close()
+    return(fig)
+
+def plot_cosmological_mnu(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
+    fig = chain.plotter.plot(parameters=['$\Omega_m$','$\sigma_8$', '$S_8$', '$\\Omega_\\nu h^2$','$\Omega_b \cdot h^2$','$\Omega_{cdm} \cdot h^2$', '$h$', '$n_{s}$', '$\ln(10^{10} A_s)$'],
+                             extents=extents_dict,
+                             watermark="Preliminary",
+                             figsize="GROW")
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'cosmo_mnu_{labelpng}.png'),
+                   dpi=300,
+                   bbox_inches='tight')
     plt.show()
     plt.close()
     return(fig)
@@ -1521,7 +1548,7 @@ def plot_full_shear_hamana(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2p
     plt.close()
     return(fig)
 
-def S8_comparison_plotter(chain_list, label_list, labelpng):
+def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
     """
     Plots a comparison of S8, Omega_m, and sigma8 values for different chains.
 
@@ -1657,6 +1684,7 @@ def S8_comparison_plotter(chain_list, label_list, labelpng):
         ### S8 ###
         ##########
         med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$S_8$')])
+        # med,up,lo=report_mean_68assy(arr=sample[:,parameters.index('$S_8$')])
         print(f'S8 = {med}+{up}-{lo}')
         # Plot data with asymetric errorbars in x-axis direction
         ax1.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=5, capthick=1)
@@ -1669,6 +1697,7 @@ def S8_comparison_plotter(chain_list, label_list, labelpng):
         ### Omega_m ###
         ###############
         med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\Omega_m$')])
+        # med,up,lo=report_mean_68assy(arr=sample[:,parameters.index('$\Omega_m$')])
         print(f'Omega_matter = {med}+{up}-{lo}')
         # Plot data with asymetric errorbars in x-axis direction
         ax2.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=5, capthick=1)
@@ -1681,6 +1710,7 @@ def S8_comparison_plotter(chain_list, label_list, labelpng):
         ### sigma8 ###
         ##############
         med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\sigma_8$')])
+        # med,up,lo=report_mean_68assy(arr=sample[:,parameters.index('$\sigma_8$')])
         print(f'sigma_8 = {med}+{up}-{lo}')
         # Plot data with asymetric errorbars in x-axis direction
         ax3.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=5, capthick=1)
@@ -1696,13 +1726,15 @@ def S8_comparison_plotter(chain_list, label_list, labelpng):
 
     # Set as y-tick the name of the chain
     ax1.set_yticks(row_index, label_list, fontsize=10)
+    
+    # Get the current y-tick labels
+    yticks = ax1.get_yticklabels()
 
-    # Get the y-tick labels
-    yticklabels = plt.gca().get_yticklabels()
+    # Apply bold style to specific y-tick labels
+    for i in bold_indices:
+        yticks[i].set_fontweight('bold')
 
-    # Set the color of each y-tick label
-    for label, color in zip(yticklabels, color_array):
-        label.set_color(color)
+
 
     # Set the x-axis limits
     ax1.set_xlim([0.5,0.95])
@@ -1710,12 +1742,12 @@ def S8_comparison_plotter(chain_list, label_list, labelpng):
     ax3.set_xlim([0.5,1.3])
 
     savepath = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/figures/S8-Omegam-sigma8-comparison/'
-    if labelpng is not None:
-        plt.savefig(os.path.join(f'S8-median1D-{labelpng}.png'),
+    if labelpng:
+        plt.savefig(os.path.join(savepath, f'S8-median1D-{labelpng}.png'),
                 bbox_inches='tight',
                 dpi=300)
 
-        plt.savefig(os.path.join(f'S8-median1D-{labelpng}.pdf'),
+        plt.savefig(os.path.join(savepath, f'S8-median1D-{labelpng}.pdf'),
                 bbox_inches='tight',
                 dpi=300)
 

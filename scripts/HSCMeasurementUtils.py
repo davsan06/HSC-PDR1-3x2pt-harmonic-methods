@@ -1260,6 +1260,7 @@ def Read_TXPipe_CombMeas_Cells(probe,i,j,combmethod,lens_sample='dr1'):
     elif combmethod == 'all':
         print('>> Reading ALL-FIELDS measurement')
         fname = ('/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab.sacc')
+        # fname = ('/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab_HikageShearSC_DESC_GCandGGL_SC_1.471COVMAT.sacc')
     else:
         print('Combination method does not exist!')
     # Read sacc
@@ -1338,7 +1339,7 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_all
                                 ha='center', va='center',
                                 transform=axs[axind].transAxes,
                                 bbox=dict(facecolor='white', edgecolor='black'),
-                                fontsize=12)
+                                fontsize=14)
                 # y-lims
                 if i == 0:
                     axs[axind].set_ylim([-0.2, 0.6])
@@ -1645,12 +1646,16 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_all
         # Adding chisq info
         npar = 12
         # Pointing to our fiducial 3x2pt + scale cuts sacc file
-        sacc_fname_aux = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab_HikageShearSC_DESC_GCandGGL_SC.sacc'
-        chisq, chisq_ndof, ndof = ComputeChisq(sacc_fname = sacc_fname_aux,
-                                                theory_fname = theory_fname,
-                                                probe = 'galaxy_shear_cl_ee',
-                                                npar = npar)
-        text = f'$\chi^2 / \\nu = {np.round(chisq, 1)} / {int(ndof)}$ = {np.round(chisq_ndof, 2)}'
+        # sacc_fname_aux = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab_HikageShearSC_DESC_GCandGGL_SC.sacc'
+        sacc_fname_aux = '/pscratch/sd/d/davidsan/HSC-PDR1-3x2pt-harmonic-methods/data/harmonic/txpipe/source_s16a_lens_dr1/all-fields/dndz/summary_statistics_fourier_all_SourcesS16A_LensesDR1_pz_mc_eab_HikageShearSC_DESC_GCandGGL_SC_1.471COVMAT.sacc'
+        # chain_fname = '/pscratch/sd/d/davidsan/new_firecrown/firecrown/examples/hsc_3x2pt/paper-results/3x2pt/output/3x2pt_LCDM_polychord/output.txt'
+        # chisq, chisq_ndof, ndof = ComputeChisq(sacc_fname = sacc_fname_aux,
+        #                                         theory_fname = theory_fname,
+        #                                         # we should point to the shear specific chain,
+        #                                         # for the moment pointing to 3x2pt chain
+        #                                         chain_fname = chain_fname,
+        #                                         probe = 'galaxy_shear_cl_ee')
+        # text = f'$\chi^2 / \\nu = {np.round(chisq, 1)} / {int(ndof)}$ = {np.round(chisq_ndof, 2)}'
         # axs[0,0].text(0.85, 0.85,f'$\chi^2 / \\nu = {np.round(chisq, 2)} / {int(npar)}$ = {np.round(chisq_ndof, 2)}', ha='center', va='center', transform=axs[0,0].transAxes, fontsize=8)
         for i in range(nbins_src):
             for j in range(i, nbins_src):
@@ -1673,9 +1678,9 @@ def Shear2pt_plot(fname,labels,add_individual=False, add_combined=False, add_all
                 axs[axind].plot(ell_th, Dell_th, lw=1.2, color='k') # , label = text)
     
     if just_auto:
-        legend = axs[0,0].legend(ncol=3,loc='upper left',frameon=True,fontsize=6)
+        legend = axs[0,0].legend(ncol=3,loc='upper left',frameon=True,fontsize=10)
     else:
-        legend = axs[0,0].legend(loc='upper left',frameon=True,fontsize=6)
+        legend = axs[3,0].legend(loc='upper left',frameon=True,fontsize=12)
     # Set the facecolor to white
     legend.get_frame().set_facecolor('white')
     # Set the edgecolor to black
@@ -1909,7 +1914,7 @@ def Clustering2pt_plot(fname,labels, Dell_scaling=True,
                                    ha='center', va='center',
                                    transform=axs[ind_plot].transAxes,
                                    bbox=dict(facecolor='white', edgecolor='black'),
-                                   fontsize=10)
+                                   fontsize=14)
                 
                 # show scale cuts as shaded regions
                 if show_scalecuts == True:
@@ -2329,9 +2334,9 @@ def Clustering2pt_plot(fname,labels, Dell_scaling=True,
     # Set the legend in the top of figure outside
     if show_residual == True:
         textfig += '_Residuals'
-        legend = axs[(0,0)].legend(ncol=1,loc='upper left',frameon=True,fontsize=7)
+        legend = axs[(0,0)].legend(ncol=1,loc='upper left',frameon=True,fontsize=12)
     else:
-        legend = axs[0].legend(ncol=1,loc='upper left',frameon=True,fontsize=7)
+        legend = axs[3].legend(ncol=1,loc='upper left',frameon=True,fontsize=12)
     # Set the facecolor to white
     legend.get_frame().set_facecolor('white')
     # Set the edgecolor to black
@@ -2378,7 +2383,7 @@ def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_
                           ha='center', va='center',
                           transform=axs[i,j].transAxes,
                           bbox=dict(facecolor='white', edgecolor='black'),
-                          fontsize=8)
+                          fontsize=12)
             if show_scalecuts == True:
                 # scale cuts as shaded regions
                 axs[i,j].axvspan(lmax[j], 2500, alpha=0.2, color='grey')
@@ -2519,7 +2524,7 @@ def Gammat2pt_plot(fname,labels,add_individual=False, add_combined=False,theory_
                 # plot 
                 axs[i,j].plot(ell_th, Dell_th, lw=1.2, color='k')
 
-    legend = axs[0,0].legend(frameon=True,loc='lower right',fontsize=8)
+    legend = axs[3,3].legend(frameon=True,loc='upper right',fontsize=10)
     # Set the facecolor to white
     legend.get_frame().set_facecolor('white')
     # Set the edgecolor to black
@@ -2637,7 +2642,7 @@ def Shear2pt_NullTest_plot(fname, just_auto=False, save_fig=False, savepath='/ps
                                 ha='center', va='center',
                                 transform=axs[axind].transAxes,
                                 bbox=dict(facecolor='white', edgecolor='black'),
-                                fontsize=12)
+                                fontsize=14)
                 if just_auto == False:
                     if i == 1:
                         axs[axind].set_ylim([-5., 5.])
@@ -2708,7 +2713,7 @@ def Shear2pt_NullTest_plot(fname, just_auto=False, save_fig=False, savepath='/ps
     if just_auto:
         axs[0].legend(frameon=False,fontsize=12)
     else:
-        axs[0,0].legend(frameon=False,fontsize=12)
+        axs[0,0].legend(frameon=True,fontsize=14)
     if save_fig == True:
         print('>> Saving figure ...')
         print(' Path: ', savepath)
@@ -2745,11 +2750,11 @@ def Gammat2pt_NullTest_plot(fname, save_fig=False, savepath='/pscratch/sd/d/davi
             # x-lim range
             axs[i,j].set_xlim([90, 2500])
             # z-bin pair
-            axs[i,j].text(0.15, 0.85,f'S{i + 1},L{j + 1}', 
+            axs[i,j].text(0.85, 0.15,f'S{i + 1},L{j + 1}', 
                           ha='center', va='center',
                           transform=axs[i,j].transAxes,
                           bbox=dict(facecolor='white', edgecolor='black'),
-                          fontsize=8)
+                          fontsize=10)
             
             # scale cuts as shaded regions
             axs[i,j].axvspan(lmax[j], 2500, alpha=0.2, color='grey')
@@ -2780,7 +2785,7 @@ def Gammat2pt_NullTest_plot(fname, save_fig=False, savepath='/pscratch/sd/d/davi
                                 alpha=1.0,
                                 label='B-mode')
     
-    axs[0,0].legend(frameon=False,fontsize=12)
+    axs[0,0].legend(frameon=True,fontsize=12)
     if save_fig == True:
         print('>> Saving figure ...')
         print(' Path: ', savepath)

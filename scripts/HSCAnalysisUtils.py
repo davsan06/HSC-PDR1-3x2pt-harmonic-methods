@@ -242,7 +242,7 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
     S.save_fits(os.path.join(path_save,'summary_statistics_clustering_hod_rsd.fits'), overwrite=True)
     # Maxmium Physical scales to generate data vectors
     # with scale cuts
-    kmax_array = np.array([0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5])
+    kmax_array = np.array([0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5])
     # Compute effective redshift of each bin and its
     # corresponding comoving distance assuming Planck cosmology
     zeff_dict, chi_dict = zEffective_Comoving_Dist_Calculation(s = S,
@@ -260,7 +260,7 @@ def GenerateHODClustering(cosmo, pk_ggf, apply_scalecuts=False):
             print('Number of remaining data points:')
             for i in np.arange(nbin_lens):
                 for j in np.arange(nbin_lens):
-                    if i >= j:
+                    if i == j:
                         # Extract ell_max
                         cut = ellmax_dict[f'{i}_{j}']
                         S.remove_selection(data_type='galaxy_density_cl', tracers=[f'lens_{i}', f'lens_{j}'], ell__gt=cut)
@@ -284,7 +284,7 @@ def zEffective_Comoving_Dist_Calculation(s, cosmo):
             - zeff_dict: A dictionary mapping the combination of tomographic bins to the effective redshift.
             - chi_dict: A dictionary mapping the combination of tomographic bins to the comoving distance.
     """
-    
+    from scipy.integrate import simps
     # Compute the effective redshift per tomographic bin
     zeff_dict = {}
     chi_dict = {}
@@ -292,32 +292,22 @@ def zEffective_Comoving_Dist_Calculation(s, cosmo):
     nbin_lens = 4
     for i in np.arange(nbin_lens):
         for j in np.arange(nbin_lens):
-            if i >= j:
+            if i == j:
                 print('Z-BIN COMBINATION',i, j)
-                # Normalizations
-                norm_1 = np.sum(s.tracers[f'lens_{i}'].nz)
-                norm_2 = np.sum(s.tracers[f'lens_{j}'].nz)
-
-                dist_1 = s.tracers[f'lens_{i}'].nz/norm_1
-                dist_2 = s.tracers[f'lens_{j}'].nz/norm_2
-
-                # Sum of distributions and normalize
-                dist_total = dist_1 + dist_2
-                dist_total = dist_total / np.sum(dist_total)
-
-                if i != j:
-                    mean = np.sum(s.tracers[f'lens_{i}'].z*dist_total)
-                    # print(mean)
-                    zeff_dict[f'{i}_{j}'] = mean
-                else:
-                    mean_1 = np.sum(s.tracers[f'lens_{i}'].z*dist_1) # Computed as the mean redshift ref. A. Nicola et al. 2020
-                    mean_2 = np.sum(s.tracers[f'lens_{j}'].z*dist_2)
-                    # print(mean_1, mean_2)
-                    mean = np.copy(mean_1)
-                zeff_dict[f'{i}_{j}'] = mean
-                print(f'z-bin = {i, j}, z_eff = {np.round(mean, 3)}')
+                z = s.tracers[f'lens_{i}'].z
+                nz = s.tracers[f'lens_{i}'].nz
+                # Print the area under the curve
+                # print(f'Area under the curve = {simps(nz, z)}')
+                # Normalize the area under the curve to 1
+                nz = nz / simps(nz, z)
+                # Print the area under the curve
+                # print(f'Area under the curve = {simps(nz, z)}')
+                # Compute effective redshift and save in a dictionary
+                zeff = simps(z * nz, z)
+                zeff_dict[f'{i}_{j}'] = zeff
+                print(f'z-bin = {i, j}, z_eff = {np.round(zeff, 3)}')
                 # Computing comoving distance
-                chi = ccl.background.comoving_radial_distance(cosmo, a=1./(1+mean))
+                chi = ccl.background.comoving_radial_distance(cosmo, a=1./(1+zeff))
                 chi_dict[f'{i}_{j}'] = chi
                 print(f'Comoving distance = {np.round(chi,2)} Mpc')
     return(zeff_dict, chi_dict)
@@ -338,7 +328,7 @@ def Kmax_to_Ellmax(kmax, chi_dict):
     nbin_lens = 4
     for i in np.arange(nbin_lens):
         for j in np.arange(nbin_lens):
-            if i >= j:
+            if i == j:
                 print('Correlation = ', i , j)
                 chi_max = chi_dict[f'{i}_{j}']
                 # transform from kmax to ellmax given the comoving distance

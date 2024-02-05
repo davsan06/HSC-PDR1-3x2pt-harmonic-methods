@@ -1,0 +1,19 @@
+Distance between the theoretical linear galaxy bias and the one obtained 
+with the minimizer defined as the sqrt of the quadratic sum 
+kmax = 0.1 Mpc^-1 -> dist(th,pred) = 0.07
+kmax = 0.15 Mpc^-1 -> dist(th,pred) = 0.08
+kmax = 0.2 Mpc^-1 -> dist(th,pred) = 0.13
+kmax = 0.25 Mpc^-1 -> dist(th,pred) = 0.17
+kmax = 0.3 Mpc^-1 -> dist(th,pred) = 0.2
+kmax = 0.4 Mpc^-1 -> dist(th,pred) = 0.28
+kmax = 0.5 Mpc^-1 -> dist(th,pred) = 0.35
+kmax = 0.6 Mpc^-1 -> dist(th,pred) = 0.37
+kmax = 0.7 Mpc^-1 -> dist(th,pred) = 0.38
+kmax = 0.8 Mpc^-1 -> dist(th,pred) = 0.4
+kmax = 0.9 Mpc^-1 -> dist(th,pred) = 0.4
+kmax = 1.0 Mpc^-1 -> dist(th,pred) = 0.4
+
+z-bin 1 = 1.17 
+z-bin 2 = 1.39 
+z-bin 3 = 1.7 
+z-bin 4 = 2.3 
