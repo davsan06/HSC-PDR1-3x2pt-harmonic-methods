@@ -1023,46 +1023,51 @@ def ApplyGCandGGLCuts(sacc_list):
     Returns:
     None
     """
-    # Scale cuts from HSC PDR1 galaxy clustering analysis
-    lmax = np.array([242.0, 275.0, 509.0, 669.0])
-
-    text_to_add = 'DESC_GCandGGL_SC'
-    for sacc_fname in sacc_list:
-        if os.path.exists(sacc_fname):
-            # New filename
-            root, extension = os.path.splitext(sacc_fname)
-            sacc_fname_save = f"{root}_{text_to_add}{extension}"
-            print(f'-{sacc_fname_save}')
-            # Read sacc
-            s = sacc.Sacc.load_fits(sacc_fname)
-            # Apply scale cuts  
-            print('Number of data points before cuts: ', len(s.mean))
-            print('Shape of the covariance before cuts: ', s.covariance.covmat.shape)
-            # Apply cuts for the galaxy clustering (just auto-correlations)
-            for i in np.arange(4):
-                s.remove_selection(data_type='galaxy_density_cl', tracers=(f'lens_{i}',f'lens_{i}'), ell__gt=lmax[i])                        
-            print('Number of data points after Galaxy Clustering cuts: ', len(s.mean))
-            print('Shape of the covariance after cuts: ', s.covariance.covmat.shape)
-            # First, index is source, second is lens
-            for i in np.arange(4):
-                for j in np.arange(4):
-                    s.remove_selection(data_type='galaxy_shearDensity_cl_e', tracers=(f'source_{i}',f'lens_{j}'), ell__gt=lmax[j])
-            print('Number of data points after GGLensing cuts: ', len(s.mean))
-            print('Shape of the covariance after GGLensing cuts: ', s.covariance.covmat.shape)
-            # Save sacc
-            print('>> >> Saving ...')
-            s.save_fits(sacc_fname_save, overwrite=True)
-            # Introduce factor F = 136.9 / 93.06 = 1.471 to account for the area differences in the mask
-            # for the covariance
-            covmat_aux = 1.471 * s.covariance.covmat 
-            s.add_covariance(covmat_aux, overwrite=True)
-            print('>> >> Saving 3x2pt dv with 1.471 * covmat')
-            sacc_fname_save = f"{root}_{text_to_add}_1.471COVMAT{extension}"
-            print(f'-{sacc_fname_save}')
-            s.save_fits(sacc_fname_save, overwrite=True)
-        else:
-            print('>> File does not exist')
-            continue
+    for kmax in [0.2, 0.15, 0.1]:
+        if kmax == 0.2:
+            lmax = np.array([323.0, 500.0, 679.0, 892.0])
+        elif kmax == 0.15:
+            # Scale cuts from HSC PDR1 galaxy clustering analysis (k=0.15 1/Mpc)
+            lmax = np.array([242.0, 375.0, 509.0, 669.0])
+        elif kmax == 0.1:
+            lmax = np.array([161.0, 250.0, 339.0, 446.0])
+        text_to_add = 'DESC_GCandGGL_SC'
+        for sacc_fname in sacc_list:
+            if os.path.exists(sacc_fname):
+                # New filename
+                root, extension = os.path.splitext(sacc_fname)
+                sacc_fname_save = f"{root}_{text_to_add}_kmax_{kmax}{extension}"
+                print(f'-{sacc_fname_save}')
+                # Read sacc
+                s = sacc.Sacc.load_fits(sacc_fname)
+                # Apply scale cuts  
+                print('Number of data points before cuts: ', len(s.mean))
+                print('Shape of the covariance before cuts: ', s.covariance.covmat.shape)
+                # Apply cuts for the galaxy clustering (just auto-correlations)
+                for i in np.arange(4):
+                    s.remove_selection(data_type='galaxy_density_cl', tracers=(f'lens_{i}',f'lens_{i}'), ell__gt=lmax[i])                        
+                print('Number of data points after Galaxy Clustering cuts: ', len(s.mean))
+                print('Shape of the covariance after cuts: ', s.covariance.covmat.shape)
+                # First, index is source, second is lens
+                for i in np.arange(4):
+                    for j in np.arange(4):
+                        s.remove_selection(data_type='galaxy_shearDensity_cl_e', tracers=(f'source_{i}',f'lens_{j}'), ell__gt=lmax[j])
+                print('Number of data points after GGLensing cuts: ', len(s.mean))
+                print('Shape of the covariance after GGLensing cuts: ', s.covariance.covmat.shape)
+                # Save sacc
+                print('>> >> Saving ...')
+                s.save_fits(sacc_fname_save, overwrite=True)
+                # Introduce factor F = 136.9 / 93.06 = 1.471 to account for the area differences in the mask
+                # for the covariance
+                covmat_aux = 1.471 * s.covariance.covmat 
+                s.add_covariance(covmat_aux, overwrite=True)
+                print('>> >> Saving 3x2pt dv with 1.471 * covmat')
+                sacc_fname_save = f"{root}_{text_to_add}_kmax_{kmax}_1.471COVMAT{extension}"
+                print(f'-{sacc_fname_save}')
+                s.save_fits(sacc_fname_save, overwrite=True)
+            else:
+                print('>> File does not exist')
+                continue
     return()
 
 def ApplyHamanaShearCuts(sacc_list):
