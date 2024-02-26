@@ -243,32 +243,24 @@ extents_dict = {
                '$\sigma_8$':[0.45,1.6],
                'w':[-3.0, -0.333],
                # Lens photo-z uncert.
-               '$\Delta z^{lens}_1$':[-0.08,0.08],
-               '$\Delta z^{lens}_2$':[-0.08,0.08],
-               '$\Delta z^{lens}_3$':[-0.08,0.08],
-               '$\Delta z^{lens}_4$':[-0.08,0.08],
-               '$\sigma z^{lens}_1$':[0.9,1.1],
-               '$\sigma z^{lens}_2$':[0.9,1.1],
-               '$\sigma z^{lens}_3$':[0.9,1.1],
-               '$\sigma z^{lens}_4$':[0.9,1.1],
+               '$\Delta z^{lens}_1$':[-1.05, 1.05],
+               '$\Delta z^{lens}_2$':[-1.05, 1.05],
+               '$\Delta z^{lens}_3$':[-1.05, 1.05],
+               '$\Delta z^{lens}_4$':[-1.05, 1.05],
+               '$\sigma z^{lens}_1$':[0.75,1.25],
+               '$\sigma z^{lens}_2$':[0.75,1.25],
+               '$\sigma z^{lens}_3$':[0.75,1.25],
+               '$\sigma z^{lens}_4$':[0.75,1.25],
                # Lens galaxy bias 
-               '$b^{lens}_1$':[0.8,3.0],
-               '$b^{lens}_2$':[0.8,3.0],
-               '$b^{lens}_3$':[0.8,3.0],
-               '$b^{lens}_4$':[0.8,3.0],
+               '$b^{lens}_1$':[0.1,6.0],
+               '$b^{lens}_2$':[0.1,6.0],
+               '$b^{lens}_3$':[0.1,6.0],
+               '$b^{lens}_4$':[0.1,6.0],
                # Sources photo-z uncert.
-               # '$\Delta z^{source}_1$':[-0.008,0.008],
-               # '$\Delta z^{source}_2$':[-0.008,0.008],
-               # '$\Delta z^{source}_3$':[-0.008,0.008],
-               # '$\Delta z^{source}_4$':[-0.008,0.008],
                '$\Delta z^{source}_1$':[-0.1,0.1],
                '$\Delta z^{source}_2$':[-0.1,0.1],
                '$\Delta z^{source}_3$':[-0.1,0.1],
                '$\Delta z^{source}_4$':[-0.1,0.1],
-               '$\sigma z^{source}_1$':[0.9,1.1],
-               '$\sigma z^{source}_2$':[0.9,1.1],
-               '$\sigma z^{source}_3$':[0.9,1.1],
-               '$\sigma z^{source}_4$':[0.9,1.1],
                # Multiplicative shear bias
                'm':[-0.025,0.025],
                # Non-linear intrinsic alignment
@@ -1222,10 +1214,10 @@ def generate_cosmosis_chain(fname_list,
             # Read Hikage et al. HSC official chain
             sample = np.loadtxt(fname)
             # All weights are 1 
-            weigths = sample[:,0]
+            weights = sample[:,0]
             if show_auxplots == True:
                 # Weights checking
-                plt.plot(np.arange(len(weigths)), weigths)
+                plt.plot(np.arange(len(weights)), weights)
                 plt.show()
                 plt.close()
             # Extract the posterior
@@ -1265,13 +1257,13 @@ def generate_cosmosis_chain(fname_list,
             # Add to already initialize chain
             c.add_chain(sample,
                         parameters=parameters,
-                        weights=weigths,
+                        weights=weights,
                         posterior=posterior,
                         kde=kde,
                         name=chain_label)
         elif fname == fname_nicola:
             sample = np.loadtxt(fname)
-            weigths = sample[:,0]
+            weights = sample[:,0]
             posterior = sample[:,1]
             parameters = list(np.copy(parameters_nicola))
             # Sampling Om_c and Om_b
@@ -1291,7 +1283,7 @@ def generate_cosmosis_chain(fname_list,
             # Add to already initialize chain
             c.add_chain(sample,
                         parameters=parameters,
-                        weights=weigths,
+                        weights=weights,
                         # posterior=posterior,
                         kde=kde,
                         name=chain_label)
@@ -1344,7 +1336,7 @@ def generate_cosmosis_chain(fname_list,
             if 'post_equal_weights.dat' in fname:
                 print('>> Loading equal weights chain')
                 sample = np.loadtxt(fname)
-                weigths = np.ones(sample.shape[0])
+                weights = np.ones(sample.shape[0])
                 posterior = sample[:,-1]
                 # Extract the parameters
                 if 'hikage' in fname:
@@ -1367,6 +1359,7 @@ def generate_cosmosis_chain(fname_list,
                 elif 'txpipe' in fname:
                     print('>> This work')
                     parameters = list(np.copy(parameters_mn_eqwpost))
+
                 
                 else:
                     print('>> Reading parameters')
@@ -1388,17 +1381,44 @@ def generate_cosmosis_chain(fname_list,
                 print('>> Chain with weights')
                 # Our MCMC
                 sample = np.loadtxt(fname)
-                # Extract parameters name from chain
-                parameters = cosmosis_header(fname=fname)
+                if 'DES Year 3 x KiDS 1000' in chain_label:
+                    parameters = list(np.copy(parameters_des_kids))
+                elif 'DES' in chain_label and '3x2pt' in chain_label:
+                    parameters = list(np.copy(parameters_des_3x2pt))
+                elif 'KiDS-1000 - 3x2pt' in chain_label:
+                    parameters = list(np.copy(parameters_kids_3x2pt))
+                elif 'HSC Year 3 - 3x2pt Small scales' in chain_label:
+                    parameters = list(np.copy(parameters_hsc_y3_3x2pt_small))
+                elif 'DES Year 3 x KiDS 1000 - 1x2pt' in chain_label:
+                    parameters = list(np.copy(parameters_des_kids))
+                elif 'Planck 2018 TTTEEE' in chain_label:
+                    parameters = list(parameters_cmb.values())
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                else: 
+                    # Extract parameters name from chain
+                    parameters = cosmosis_header(fname=fname)
                 # Extract weights and posterior
-                weigths = sample[:,parameters.index('$weight$')]
+                if '$weight$' in parameters:
+                    weights = sample[:,parameters.index('$weight$')]
+                else:
+                    weights = np.ones(sample.shape[0])
                 # Burn-in cut
                 # Find the first index where the weight is larger than 1e-6
-                ind_burnin = np.argmax(weigths>1e-6)
+                ind_burnin = np.argmax(weights>1e-6)
                 print(f'>> Burn-in cut at index {ind_burnin}')
                 if show_auxplots == True:
                     # Plot the weights
-                    plt.plot(np.arange(len(weigths)),weigths, color='k')
+                    plt.plot(np.arange(len(weights)),weights, color='k')
                     # Plot a dashed vertical line at that index
                     plt.axvline(x=ind_burnin, linestyle='--', color='r')
                     plt.show()
@@ -1409,8 +1429,14 @@ def generate_cosmosis_chain(fname_list,
                     sample = sample[ind_burnin:,:]
                     print(f'>> Chain size after burn-in cut: {sample.shape}')
                 # Extract the posterior
-                posterior = sample[:,parameters.index('$post$')] 
-                weigths = sample[:,parameters.index('$weight$')]
+                if '$post$' in parameters:
+                    posterior = sample[:,parameters.index('$post$')] 
+                else: 
+                    posterior = np.ones(sample.shape[0])
+                if '$weight$' in parameters:
+                    weights = sample[:,parameters.index('$weight$')]
+                else:
+                    weights = np.ones(sample.shape[0])
                 if '$\Omega_m$' in parameters:
                     print('>> Omega_m already computed during sampling')
                 else:
@@ -1450,16 +1476,16 @@ def generate_cosmosis_chain(fname_list,
             # Add to already initialize chain
             c.add_chain(sample,
                         parameters=parameters,
-                        weights=weigths,
+                        weights=weights,
                         posterior=posterior,
                         kde=kde,
                         name=chain_label)
-            
-        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\Omega_m$')])
+
+        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\Omega_m$')], weights = weights)
         print(f'Omega_matter = {med}+{up}-{lo}')
-        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\sigma_8$')])
+        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\sigma_8$')], weights = weights)
         print(f'sigma_8 = {med}+{up}-{lo}')
-        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$S_8$')])
+        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$S_8$')], weights = weights)
         print(f'S8 = {med}+{up}-{lo}')
         # if report_median == True:
         # for par in parameters:
@@ -1486,9 +1512,39 @@ def sigma_68(arr,axis=None):
     upper,lower=np.percentile(arr,[84.075,15.825],axis=axis)
     return(upper, lower)
 
-def report_median_68assy(arr):
+def weighted_median(data, weights):
+    """
+    Compute the weighted median of data.
+    
+    Parameters:
+    data : list or numpy array
+        Data points.
+    weights : list or numpy array
+        Weights corresponding to data points.
+        
+    Returns:
+    weighted_median : float
+        The weighted median.
+    """
+    # Combine the data and weights and sort by data
+    combined = list(zip(data, weights))
+    combined.sort(key=lambda x: x[0])
+    data_sorted, weights_sorted = zip(*combined)
+    
+    # Compute the cumulative weight
+    cumulative_weights = [sum(weights_sorted[:i+1]) for i in range(len(weights_sorted))]
+    half_total_weight = sum(weights_sorted) / 2
+    
+    # Find the weighted median
+    for i, weight in enumerate(cumulative_weights):
+        if weight >= half_total_weight:
+            return data_sorted[i]
+
+
+def report_median_68assy(arr, weights):
     # arr = data_hsc[:,parameters_hsc.index('$\Omega_m$')]
-    median = np.median(arr)
+    # median = np.median(arr)
+    median = weighted_median(data = arr, weights = weights)
     upper, lower = sigma_68(arr, axis=None)
     upper = upper - median
     lower = median - lower 
@@ -1550,7 +1606,7 @@ def plot_S8(chain,labelpng,S8_alpha,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/
 
 def plot_Omegam_sigma8_S8(chain,labelpng,S8_alpha,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
     chain.configure(
-                legend_kwargs={"fontsize": 8},
+                legend_kwargs={"fontsize": 12},
                 legend_location=(0, 0),
                 )
     fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$', '$S_8$'], 
@@ -1746,6 +1802,24 @@ def plot_pz_stretch_lens(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-
     plt.close()
     return(fig)
 
+def plot_consistency_lenses(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/figures/clustering'):
+    fig = chain.plotter.plot(parameters=['$\Omega_m$', '$\sigma_8$', '$S_8$',
+                                         '$b^{lens}_1$','$b^{lens}_2$','$b^{lens}_3$','$b^{lens}_4$',
+                                         '$\Delta z^{lens}_1$','$\Delta z^{lens}_2$','$\Delta z^{lens}_3$','$\Delta z^{lens}_4$',
+                                         '$\sigma z^{lens}_1$','$\sigma z^{lens}_2$','$\sigma z^{lens}_3$','$\sigma z^{lens}_4$'],
+                             extents=extents_dict,
+                             figsize="GROW")
+    if savepath is not None:
+        plt.savefig(os.path.join(savepath,f'consistency_lenses_{labelpng}.png'),
+                    dpi=300,
+                    bbox_inches='tight')
+        plt.savefig(os.path.join(savepath,f'consistency_lenses_{labelpng}.pdf'),
+                    dpi=300,
+                    bbox_inches='tight')
+    plt.show()
+    plt.close()
+    return(fig)
+
 ######################################
 ###   Sources photo-z uncert.      ###
 ######################################
@@ -1904,7 +1978,7 @@ def plot_full_shear_hamana(chain,labelpng,savepath='/pscratch/sd/d/davidsan/3x2p
     plt.close()
     return(fig)
 
-def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
+def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng, figsize):
     """
     Plots a comparison of S8, Omega_m, and sigma8 values for different chains.
 
@@ -1922,7 +1996,8 @@ def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
     from scipy.special import ndtri
 
     # Create a figure
-    fig = plt.figure(figsize=(25, 50))
+    # figsize = (25, 10)
+    fig = plt.figure(figsize=figsize)
 
     # Define the GridSpec
     gs = gridspec.GridSpec(1, 3, figure=fig)  # 1 row, 4 columns
@@ -1959,7 +2034,7 @@ def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
             # Read Hikage et al. HSC official chain
             sample = np.loadtxt(fname)
             # All weights are 1 
-            weigths = sample[:,0]
+            weights = sample[:,0]
             # Read the parameters
             parameters = list(np.copy(parameters_hsc))
             # Appending S8 derived parameter
@@ -1986,7 +2061,7 @@ def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
         elif fname == '/pscratch/sd/d/davidsan/3x2pt-HSC/HSC-3x2pt-methods/chains/carlos_chains/hsc_dz_Andrina_ell300/hsc_dz_Andrina_ell300.merged.txt':
             print('Nicola et al. / Garcia-Garcia et al. HSC Year 1 Cl')
             sample = np.loadtxt(fname)
-            weigths = sample[:,0]
+            weights = sample[:,0]
             posterior = sample[:,1]
             parameters = list(np.copy(parameters_nicola))
             # Sampling Om_c and Om_b
@@ -1997,7 +2072,7 @@ def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
             print('Planck 2018 TTTEEE')
             sample = np.loadtxt(fname)
             parameters = list(parameters_cmb.values())
-            weigths = sample[:,parameters.index('$weight$')]
+            weights = sample[:,parameters.index('$weight$')]
             # Normalize the area
         elif fname == '/pscratch/sd/d/davidsan/KiDS1000_vdB22_cosmic_shear_data_release/multinest/Fid_output_multinest_C.txt':
             print('KiDS 1000 cosmic shear')
@@ -2035,14 +2110,14 @@ def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
                 # print(parameters)
             if ('$weight$' in parameters) and ('Planck' not in label):
                 # Extract weights and posterior
-                weigths = sample[:,parameters.index('$weight$')]
+                weights = sample[:,parameters.index('$weight$')]
                 # Burn-in cut
                 # Find the first index where the weight is larger than 1e-6
-                ind_burnin = np.argmax(weigths>1e-6)
+                ind_burnin = np.argmax(weights>1e-6)
                 # Apply burn-in cut
                 sample = sample[ind_burnin:,:]
                 # Extract weights and posterior
-                weigths = sample[:,parameters.index('$weight$')]
+                weights = sample[:,parameters.index('$weight$')]
             if '$\Omega_m$' in parameters:
                 print('>> Omega_m already computed during sampling')
             else:
@@ -2059,10 +2134,7 @@ def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
         if label == '1x2pt' or label == '2x2pt' or label == '3x2pt':
             color='purple'
             symbol = '*'
-            size = 20.0
-            if label == '2x2pt' or label == '3x2pt':
-                symbol = 'o'
-                size = 8.0
+            size = 13.0
         elif 'HSC Year 1' in label:
             color = 'red'
             size = 8.0
@@ -2081,11 +2153,11 @@ def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
         ##########
         ### S8 ###
         ##########
-        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$S_8$')])
+        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$S_8$')], weights = weights)
         # med,up,lo=report_mean_68assy(arr=sample[:,parameters.index('$S_8$')])
-        # print(f'S8 = {med}+{up}-{lo}')
+        print(f'S8 = {med}+{up}-{lo}')
         # Plot data with asymetric errorbars in x-axis direction
-        ax1.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=5, capthick=1)
+        ax1.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=0, capthick=1,elinewidth=3)
         if label == '1x2pt' or label == 'Planck 2018 TTTEEE':
             # Set vertical shaded region spanning the 1-sigma confidence interval
             ax1.axvspan(med-lo, med+up, alpha=0.2, color=color)
@@ -2094,11 +2166,11 @@ def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
         ###############
         ### Omega_m ###
         ###############
-        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\Omega_m$')])
+        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\Omega_m$')], weights = weights)
         # med,up,lo=report_mean_68assy(arr=sample[:,parameters.index('$\Omega_m$')])
-        # print(f'Omega_matter = {med}+{up}-{lo}')
+        print(f'Omega_matter = {med}+{up}-{lo}')
         # Plot data with asymetric errorbars in x-axis direction
-        ax2.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=5, capthick=1)
+        ax2.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=0, capthick=1, elinewidth=3)
         if label == '1x2pt' or label == 'Planck 2018 TTTEEE':
             # Set vertical shaded region spanning the 1-sigma confidence interval
             ax2.axvspan(med-lo, med+up, alpha=0.2, color=color)
@@ -2107,11 +2179,11 @@ def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
         ##############
         ### sigma8 ###
         ##############
-        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\sigma_8$')])
+        med,up,lo=report_median_68assy(arr=sample[:,parameters.index('$\sigma_8$')], weights = weights)
         # med,up,lo=report_mean_68assy(arr=sample[:,parameters.index('$\sigma_8$')])
-        # print(f'sigma_8 = {med}+{up}-{lo}')
+        print(f'sigma_8 = {med}+{up}-{lo}')
         # Plot data with asymetric errorbars in x-axis direction
-        ax3.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=5, capthick=1)
+        ax3.errorbar(med, ypos, xerr=[[lo],[up]], fmt=symbol, ms = size, color=color, capsize=0, capthick=1, elinewidth=3)
         if label == '1x2pt' or label == 'Planck 2018 TTTEEE':
             # Set vertical shaded region spanning the 1-sigma confidence interval
             ax3.axvspan(med-lo, med+up, alpha=0.2, color=color)
@@ -2134,7 +2206,7 @@ def S8_comparison_plotter(chain_list, label_list, bold_indices, labelpng):
         elif label == 'DES Year 3 $\\xi$(r) - 1x2pt':
             ax1.text(0.47, ypos, 'Stage III & CMB', fontsize=20, alpha=0.6)
 
-        if label in ['3x2pt', 'Shear + Clustering', '1x2pt wCDM','HSC Year 1 (Nicola et al. & Garcia-Garcia et al.) - 1x2pt C$_\ell$']:
+        if label in ['3x2pt', 'Shear + Clustering', '1x2pt wCDM','HSC Year 1 (re-analysis) - 1x2pt C$_\ell$']:
             ax1.axhline(ypos - 0.5, color='grey', alpha=0.5, lw=4.0)
             ax2.axhline(ypos - 0.5, color='grey', alpha=0.5, lw=4.0)
             ax3.axhline(ypos - 0.5, color='grey', alpha=0.5, lw=4.0)
